@@ -1,0 +1,60 @@
+{
+  "name": "sonner-wc",
+  "version": "0.1.0",
+  "description": "Sonner's toast UX as a framework-agnostic Web Component. Drop in anywhere.",
+  "type": "module",
+  "main": "./dist/sonner-wc.js",
+  "module": "./dist/sonner-wc.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/sonner-wc.js"
+    },
+    "./bundle": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/sonner-wc.bundle.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": [
+    "./dist/sonner-wc.js",
+    "./dist/sonner-wc.bundle.js"
+  ],
+  "scripts": {
+    "build:wc": "bun run build.ts",
+    "build:site": "cd site && bun run build",
+    "build": "bun run build:wc && bun run build:site",
+    "dev:wc": "bun run scripts/dev.ts",
+    "dev:site": "cd site && bun run dev",
+    "dev": "concurrently -n wc,site -c blue,magenta \"bun run dev:wc\" \"bun run dev:site\"",
+    "test": "bun test",
+    "typecheck": "bunx tsc --noEmit",
+    "format": "prettier --write \"**/*.{ts,js,css,html,md,json}\"",
+    "format:check": "prettier --check \"**/*.{ts,js,css,html,md,json}\"",
+    "lint:pkg": "publint",
+    "lint:types": "attw --pack . --ignore-rules cjs-resolves-to-esm no-resolution",
+    "lint:exports": "bun run build:wc && bun run lint:pkg && bun run lint:types"
+  },
+  "keywords": [
+    "toast",
+    "notification",
+    "sonner",
+    "web-component",
+    "custom-element"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.2",
+    "@happy-dom/global-registrator": "^20.9.0",
+    "@types/bun": "latest",
+    "concurrently": "^9.2.1",
+    "prettier": "^3.8.3",
+    "publint": "^0.3.21",
+    "typescript": "^5.6.0"
+  }
+}

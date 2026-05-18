@@ -1,0 +1,166 @@
+:host {
+  position: fixed;
+  width: var(--width);
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    Segoe UI,
+    Roboto,
+    Helvetica Neue,
+    Arial,
+    Noto Sans,
+    sans-serif,
+    Apple Color Emoji,
+    Segoe UI Emoji,
+    Segoe UI Symbol,
+    Noto Color Emoji;
+  --gray1: hsl(0, 0%, 99%);
+  --gray2: hsl(0, 0%, 97.3%);
+  --gray3: hsl(0, 0%, 95.1%);
+  --gray4: hsl(0, 0%, 93%);
+  --gray5: hsl(0, 0%, 90.9%);
+  --gray6: hsl(0, 0%, 88.7%);
+  --gray7: hsl(0, 0%, 85.8%);
+  --gray8: hsl(0, 0%, 78%);
+  --gray9: hsl(0, 0%, 56.1%);
+  --gray10: hsl(0, 0%, 52.3%);
+  --gray11: hsl(0, 0%, 43.5%);
+  --gray12: hsl(0, 0%, 9%);
+  --border-radius: 8px;
+  --width: 356px;
+  --gap: 14px;
+  --offset-top: 24px;
+  --offset-right: 24px;
+  --offset-bottom: 24px;
+  --offset-left: 24px;
+  --mobile-offset-top: 16px;
+  --mobile-offset-right: 16px;
+  --mobile-offset-bottom: 16px;
+  --mobile-offset-left: 16px;
+  --toast-icon-margin-start: -3px;
+  --toast-icon-margin-end: 4px;
+  --toast-svg-margin-start: -1px;
+  --toast-svg-margin-end: 0px;
+  --toast-button-margin-start: auto;
+  --toast-button-margin-end: 0;
+  --toast-close-button-start: 0;
+  --toast-close-button-end: unset;
+  --toast-close-button-transform: translate(-35%, -35%);
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  outline: none;
+  z-index: 999999999;
+  transition: transform 400ms ease;
+  display: block;
+}
+
+[data-frame] {
+  display: block;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+:host([dir='rtl']) {
+  --toast-icon-margin-start: 4px;
+  --toast-icon-margin-end: -3px;
+  --toast-svg-margin-start: 0px;
+  --toast-svg-margin-end: -1px;
+  --toast-button-margin-start: 0;
+  --toast-button-margin-end: auto;
+  --toast-close-button-start: unset;
+  --toast-close-button-end: 0;
+  --toast-close-button-transform: translate(35%, -35%);
+}
+
+:host([data-x-position='right']) {
+  right: var(--offset-right);
+}
+:host([data-x-position='left']) {
+  left: var(--offset-left);
+}
+:host([data-x-position='center']) {
+  left: 50%;
+  transform: translateX(-50%);
+}
+:host([data-y-position='top']) {
+  top: var(--offset-top);
+}
+:host([data-y-position='bottom']) {
+  bottom: var(--offset-bottom);
+}
+
+@media (hover: none) and (pointer: coarse) {
+  :host([data-lifted='true']) {
+    transform: none;
+  }
+}
+
+/* Theme palette via light-dark(). The `theme` attribute on <sonner-toaster>
+ * (light / dark, or resolved from `system`) drives `color-scheme` on the host,
+ * which determines which side of each light-dark() pair wins. */
+:host([data-sonner-theme='light']) { color-scheme: light; }
+:host([data-sonner-theme='dark']) { color-scheme: dark; }
+
+:host {
+  --normal-bg: light-dark(#fff, #000);
+  --normal-bg-hover: light-dark(var(--gray2), hsl(0, 0%, 12%));
+  --normal-border: light-dark(var(--gray4), hsl(0, 0%, 20%));
+  --normal-border-hover: light-dark(var(--gray5), hsl(0, 0%, 25%));
+  --normal-text: light-dark(var(--gray12), var(--gray1));
+  --invert-bg: light-dark(#000, #fff);
+  --invert-border: light-dark(hsl(0, 0%, 20%), var(--gray3));
+  --invert-text: light-dark(var(--gray1), var(--gray12));
+  --description-color: light-dark(#3f3f3f, hsl(0, 0%, 91%));
+  --cancel-bg: light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.3));
+  --success-bg: light-dark(hsl(143, 85%, 96%), hsl(150, 100%, 6%));
+  --success-border: light-dark(hsl(145, 92%, 87%), hsl(147, 100%, 12%));
+  --success-text: light-dark(hsl(140, 100%, 27%), hsl(150, 86%, 65%));
+  --info-bg: light-dark(hsl(208, 100%, 97%), hsl(215, 100%, 6%));
+  --info-border: light-dark(hsl(221, 91%, 93%), hsl(223, 43%, 17%));
+  --info-text: light-dark(hsl(210, 92%, 45%), hsl(216, 87%, 65%));
+  --warning-bg: light-dark(hsl(49, 100%, 97%), hsl(64, 100%, 6%));
+  --warning-border: light-dark(hsl(49, 91%, 84%), hsl(60, 100%, 9%));
+  --warning-text: light-dark(hsl(31, 92%, 45%), hsl(46, 87%, 65%));
+  --error-bg: light-dark(hsl(359, 100%, 97%), hsl(358, 76%, 10%));
+  --error-border: light-dark(hsl(359, 100%, 94%), hsl(357, 89%, 16%));
+  --error-text: light-dark(hsl(360, 100%, 45%), hsl(358, 100%, 81%));
+}
+
+@media (max-width: 600px) {
+  /* width is intentionally `auto` so that the toaster respects BOTH offsets
+   * and fits between them. Sonner's reference CSS uses width: 100% here, but
+   * that's over-constrained with both left and right set — the right offset
+   * gets ignored and the element extends past the viewport's right edge by
+   * --mobile-offset-right (visible unless body has overflow-x: hidden). */
+  :host {
+    position: fixed;
+    right: var(--mobile-offset-right);
+    left: var(--mobile-offset-left);
+    width: auto;
+  }
+  :host([dir='rtl']) {
+    left: calc(var(--mobile-offset-left) * -1);
+  }
+  :host([data-x-position='left']) {
+    left: var(--mobile-offset-left);
+  }
+  :host([data-x-position='right']) {
+    right: var(--mobile-offset-right);
+  }
+  :host([data-y-position='bottom']) {
+    bottom: var(--mobile-offset-bottom);
+  }
+  :host([data-y-position='top']) {
+    top: var(--mobile-offset-top);
+  }
+  :host([data-x-position='center']) {
+    left: var(--mobile-offset-left);
+    right: var(--mobile-offset-right);
+    transform: none;
+  }
+}
