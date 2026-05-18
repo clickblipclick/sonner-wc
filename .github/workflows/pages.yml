@@ -26,6 +26,10 @@ jobs:
           bun-version: latest
       - run: bun install --frozen-lockfile
 
+      # The site's Vite alias `$wc` resolves to dist/sonner-wc.js, so the
+      # WC has to be built before the site can be bundled.
+      - run: bun run build:wc
+
       - name: Build site
         env:
           # Subpath under <user>.github.io/<repo>/. Change to '' if you
