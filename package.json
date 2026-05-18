@@ -21,6 +21,12 @@
     "README.md",
     "LICENSE"
   ],
+  "engines": {
+    "bun": ">=1.1"
+  },
+  "workspaces": [
+    "site"
+  ],
   "sideEffects": [
     "./dist/sonner-wc.js",
     "./dist/sonner-wc.bundle.js"

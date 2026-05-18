@@ -1,7 +1,7 @@
 # sonner-wc
 
 [Sonner](https://github.com/emilkowalski/sonner)'s toast UX as a framework-agnostic web component.
-Drop it into anything — vanilla HTML, React, Vue, Svelte, htmx — same API, same look.
+Drop it into anything — vanilla HTML, Vue, Svelte, htmx — same API, same look.
 
 ```html
 <script type="module" src="https://unpkg.com/sonner-wc/dist/sonner-wc.bundle.js"></script>
