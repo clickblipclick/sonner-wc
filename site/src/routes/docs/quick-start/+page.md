@@ -1,3 +1,7 @@
+<script>
+  import { base } from '$app/paths';
+</script>
+
 # Quick start
 
 Get a toast on screen in 30 seconds.
@@ -24,12 +28,12 @@ toast('Hello, world!');
 ```
 
 That's it. Calling `toast()` anywhere on the page after that will show a
-toast. See the [API reference](/docs/api) for variants, options, and
+toast. See the <a href="{base}/docs/api">API reference</a> for variants, options, and
 events.
 
 ## What next?
 
 - Tweak position, duration, and rich colors on `<sonner-toaster>` —
-  see [API](/docs/api).
+  see <a href="{base}/docs/api">API</a>.
 - Override colors and dimensions via CSS custom properties —
-  see [Theming](/docs/theming).
+  see <a href="{base}/docs/theming">Theming</a>.

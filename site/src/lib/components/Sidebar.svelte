@@ -1,5 +1,6 @@
 <script lang="ts">
   import { page } from '$app/state';
+  import { base } from '$app/paths';
   import { docsNav } from '$lib/nav';
 </script>
 
@@ -14,10 +15,11 @@
         </h4>
         <ul class="space-y-1">
           {#each group.items as item}
-            {@const active = page.url.pathname === item.href}
+            {@const href = `${base}${item.href}`}
+            {@const active = page.url.pathname === href}
             <li>
               <a
-                href={item.href}
+                {href}
                 class="block rounded px-2 py-1 text-sm {active
                   ? 'bg-base-200 font-medium text-base-content'
                   : 'text-base-content/70 hover:bg-base-200 hover:text-base-content'}"

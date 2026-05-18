@@ -1,8 +1,9 @@
 <script lang="ts">
   import ThemeToggle from './ThemeToggle.svelte';
   import { page } from '$app/state';
+  import { base } from '$app/paths';
 
-  const isDocs = $derived(page.url.pathname.startsWith('/docs'));
+  const isDocs = $derived(page.url.pathname.startsWith(`${base}/docs`));
 </script>
 
 <header
@@ -32,7 +33,7 @@
           </svg>
         </label>
       {/if}
-      <a href="/" class="flex items-center gap-2 font-semibold tracking-tight">
+      <a href="{base}/" class="flex items-center gap-2 font-semibold tracking-tight">
         <span class="text-base-content text-nowrap">sonner-wc</span>
       </a>
     </div>

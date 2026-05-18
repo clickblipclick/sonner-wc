@@ -1,6 +1,7 @@
 <script lang="ts">
   import LiveDemo from '$lib/components/LiveDemo.svelte';
   import CopyButton from '$lib/components/CopyButton.svelte';
+  import { base } from '$app/paths';
 
   let { data } = $props();
   const installCmd = $derived(data.installCmd);
@@ -18,8 +19,8 @@
   </p>
 
   <div class="mt-8 flex items-center justify-center gap-3">
-    <a class="btn btn-primary" href="/docs/install">Get started</a>
-    <a class="btn btn-outline" href="/docs/api">API reference</a>
+    <a class="btn btn-primary" href="{base}/docs/install">Get started</a>
+    <a class="btn btn-outline" href="{base}/docs/api">API reference</a>
   </div>
 
   <div class="mt-8">

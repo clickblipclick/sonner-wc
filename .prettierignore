@@ -3,3 +3,7 @@ dist
 bun.lockb
 .claude
 docs
+site/build
+site/.svelte-kit
+playwright-report
+test-results

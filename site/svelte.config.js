@@ -15,6 +15,9 @@ const config = {
       precompress: false,
       strict: true,
     }),
+    // Set BASE_PATH at build time (e.g. '/sonner-wc' for GitHub Pages on a
+    // project subpath). Empty in dev and on a root-served deploy.
+    paths: { base: process.env.BASE_PATH ?? '' },
   },
 };
 
