@@ -18,14 +18,26 @@ async function swipeFromTop(
 ): Promise<void> {
   const startX = box.x + box.width / 2;
   const startY = box.y + 10;
-  // Clamp the destination to the viewport. Firefox via Playwright drops
-  // pointer events whose coordinates fall outside the viewport, so an
-  // off-screen target turns into a no-op swipe.
+  // Firefox via Playwright doesn't always honor setPointerCapture, so pointer
+  // events stop reaching the toast once the cursor leaves its bounds. Run the
+  // drag in two phases: an in-bounds nudge that registers the swipe direction
+  // and amount on the toast, then a final move to the requested destination
+  // (clamped to the viewport, which Firefox also requires).
   const viewport = page.viewportSize() ?? { width: 1280, height: 900 };
   const clampedX = Math.max(0, Math.min(viewport.width - 1, toX));
   const clampedY = Math.max(0, Math.min(viewport.height - 1, toY));
+  // Choose an in-bounds intermediate point biased along the dominant swipe
+  // axis so the swipe direction (x or y) is locked in from the toast's first
+  // pointermove. Preserving the start coordinate on the off-axis keeps the
+  // delta on that axis tiny.
+  const dx = clampedX - startX;
+  const dy = clampedY - startY;
+  const dominantY = Math.abs(dy) >= Math.abs(dx);
+  const innerX = dominantY ? startX : Math.max(box.x + 5, Math.min(box.x + box.width - 5, clampedX));
+  const innerY = dominantY ? Math.max(box.y + 5, Math.min(box.y + box.height - 5, clampedY)) : startY;
   await page.mouse.move(startX, startY);
   await page.mouse.down();
+  await page.mouse.move(innerX, innerY);
   await page.mouse.move(clampedX, clampedY);
   await page.mouse.up();
 }
@@ -222,6 +234,32 @@ test.describe('Basic functionality', () => {
   test('string description is rendered', async ({ page }) => {
     await page.getByTestId('string-description').click();
     await expect(page.getByText('string description')).toHaveCount(1);
+  });
+
+  test('toast has aria-atomic="true"', async ({ page }) => {
+    await page.getByTestId('default-button').click();
+    await expect(page.locator('[data-sonner-toast]')).toHaveAttribute('aria-atomic', 'true');
+  });
+
+  test('return focus to the previously focused element on dismiss', async ({ page }) => {
+    await page.getByTestId('focus-return-trigger').focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('[data-sonner-toast]')).toHaveCount(1);
+    await page.locator('[data-action]').focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('[data-sonner-toast]')).toHaveCount(0);
+    await expect(page.getByTestId('focus-return-trigger')).toBeFocused();
+  });
+
+  test('Escape dismisses the focused toast', async ({ page }) => {
+    await page.getByTestId('escape-trigger').focus();
+    await page.keyboard.press('Enter');
+    const toast = page.locator('[data-sonner-toast]');
+    await expect(toast).toHaveCount(1);
+    await toast.focus();
+    await page.keyboard.press('Escape');
+    await expect(toast).toHaveCount(0);
+    await expect(page.getByTestId('escape-trigger')).toBeFocused();
   });
 
   test('aria labels are custom', async ({ page }) => {

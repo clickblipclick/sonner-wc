@@ -171,6 +171,18 @@ btn('node-description', 'Node description', () =>
   }),
 );
 
+// ── Focus return / Escape ───────────────────────────────
+btn('focus-return-trigger', 'Focus-return trigger', () =>
+  toast('Focus return toast', {
+    duration: Infinity,
+    action: { label: 'Dismiss', onClick: () => {} },
+  }),
+);
+
+btn('escape-trigger', 'Escape trigger', () =>
+  toast('Escape me', { duration: Infinity }),
+);
+
 // ── ARIA labels ─────────────────────────────────────────
 // One-shot: set a custom container label on the primary toaster when the
 // button is clicked, then create a toast with a custom close-button label.

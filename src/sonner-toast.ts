@@ -125,6 +125,9 @@ export class SonnerToast extends HTMLElementCtor implements SonnerToastElement {
   #onDismiss: ToastOptions['onDismiss'];
   #onAutoClose: ToastOptions['onAutoClose'];
   #closeButtonAriaLabel: string | null = null;
+  /** Element that had focus immediately before focus first entered this toast.
+   *  Used to restore focus when the toast is dismissed while focused. */
+  #prevFocus: Element | null = null;
 
   constructor() {
     super();
@@ -153,8 +156,20 @@ export class SonnerToast extends HTMLElementCtor implements SonnerToastElement {
     this.addEventListener('pointercancel', this.#onPointerUp);
     this.addEventListener('mouseenter', () => this.#pauseFor('hover-self'));
     this.addEventListener('mouseleave', () => this.#resumeFrom('hover-self'));
-    this.addEventListener('focusin', () => this.#pauseFor('focus-self'));
+    this.addEventListener('focusin', (e: FocusEvent) => {
+      this.#pauseFor('focus-self');
+      // Capture the externally-focused element only once, on first entry.
+      if (this.#prevFocus) return;
+      const from = e.relatedTarget as Element | null;
+      if (from && !this.contains(from)) this.#prevFocus = from;
+    });
     this.addEventListener('focusout', () => this.#resumeFrom('focus-self'));
+    this.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && this.#isDismissible()) {
+        e.stopPropagation();
+        this.dismiss();
+      }
+    });
   }
 
   connectedCallback() {
@@ -167,6 +182,9 @@ export class SonnerToast extends HTMLElementCtor implements SonnerToastElement {
     this.#applyInvert();
     this.#applyCloseButton();
     this.setAttribute('data-sonner-toast', '');
+    // aria-atomic ensures the whole toast re-announces when its contents
+    // change (e.g. promise loading → success), instead of only the diff.
+    if (!this.hasAttribute('aria-atomic')) this.setAttribute('aria-atomic', 'true');
     this.setAttribute('data-mounted', 'false');
     this.setAttribute('data-removed', 'false');
     this.setAttribute('data-swiping', 'false');
@@ -240,9 +258,22 @@ export class SonnerToast extends HTMLElementCtor implements SonnerToastElement {
       new CustomEvent('sonner-toast-dismissed', { bubbles: true, composed: true }),
     );
     setTimeout(() => {
+      this.#restoreFocusIfInside();
       this.#onDismiss?.(this);
       this.remove();
     }, TIME_BEFORE_UNMOUNT);
+  }
+
+  /** If focus is still inside this toast at dismissal time, move it back to
+   *  whatever was focused before focus first entered. Otherwise leave focus
+   *  alone — the user has moved on. */
+  #restoreFocusIfInside(): void {
+    if (!this.#prevFocus) return;
+    const active = document.activeElement;
+    if (!active || !this.contains(active)) return;
+    const target = this.#prevFocus as HTMLElement;
+    if (!target.isConnected || typeof target.focus !== 'function') return;
+    target.focus();
   }
 
   /** Apply new content/options. Used by toast.promise() for loading→success/error transitions. */
