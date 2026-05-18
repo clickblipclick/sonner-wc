@@ -224,6 +224,13 @@ test.describe('Basic functionality', () => {
     await expect(page.getByText('string description')).toHaveCount(1);
   });
 
+  test('aria labels are custom', async ({ page }) => {
+    await page.getByRole('button', { name: 'With custom ARIA labels' }).click();
+    await expect(page.getByText('Toast with custom ARIA labels')).toHaveCount(1);
+    await expect(page.getByLabel('Notices')).toHaveCount(1);
+    await expect(page.getByLabel('Yeet the notice', { exact: true })).toHaveCount(1);
+  });
+
   test('toast with testId renders data-testid attribute correctly', async ({ page }) => {
     await page.getByTestId('testid-toast-button').click();
     await expect(page.getByTestId('my-test-toast')).toBeVisible();

@@ -52,6 +52,7 @@ export class SonnerToaster extends HTMLElementCtor implements SonnerToasterEleme
       'offset',
       'mobile-offset',
       'hotkey',
+      'container-aria-label',
     ];
   }
 
@@ -187,6 +188,9 @@ export class SonnerToaster extends HTMLElementCtor implements SonnerToasterEleme
       case 'offset':
       case 'mobile-offset':
         this.#applyOffsets();
+        break;
+      case 'container-aria-label':
+        this.setAttribute('aria-label', this.getAttribute('container-aria-label') ?? 'Notifications');
         break;
     }
   }

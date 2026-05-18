@@ -171,6 +171,18 @@ btn('node-description', 'Node description', () =>
   }),
 );
 
+// ── ARIA labels ─────────────────────────────────────────
+// One-shot: set a custom container label on the primary toaster when the
+// button is clicked, then create a toast with a custom close-button label.
+btn('aria-labels', 'With custom ARIA labels', () => {
+  toaster.setAttribute('container-aria-label', 'Notices');
+  toast('Toast with custom ARIA labels', {
+    duration: Infinity,
+    closeButton: true,
+    closeButtonAriaLabel: 'Yeet the notice',
+  });
+});
+
 // ── testId ───────────────────────────────────────────────
 btn('testid-toast-button', 'Toast with testId', () =>
   toast('Toast with test ID', { testId: 'my-test-toast', duration: Infinity }),

@@ -124,6 +124,7 @@ export class SonnerToast extends HTMLElementCtor implements SonnerToastElement {
 
   #onDismiss: ToastOptions['onDismiss'];
   #onAutoClose: ToastOptions['onAutoClose'];
+  #closeButtonAriaLabel: string | null = null;
 
   constructor() {
     super();
@@ -291,6 +292,10 @@ export class SonnerToast extends HTMLElementCtor implements SonnerToastElement {
     }
     if (options.className) this.className = options.className;
     if (options.testId !== undefined) this.setAttribute('data-testid', options.testId);
+    if (options.closeButtonAriaLabel !== undefined) {
+      this.#closeButtonAriaLabel = options.closeButtonAriaLabel || null;
+      this.#applyCloseButtonAriaLabel();
+    }
     if (options.onDismiss) this.#onDismiss = options.onDismiss;
     if (options.onAutoClose) this.#onAutoClose = options.onAutoClose;
     if (timerNeedsReset) this.#resetTimer();
@@ -299,7 +304,16 @@ export class SonnerToast extends HTMLElementCtor implements SonnerToastElement {
 
   setTitle(value: ToastContent): void {
     setContent(this, 'title', value);
-    // Disambiguate the close button by including the toast's title in its label.
+    this.#applyCloseButtonAriaLabel();
+  }
+
+  /** Apply the close button's aria-label: explicit override wins, otherwise
+   *  `Close: <title>` for disambiguation, falling back to `Close toast`. */
+  #applyCloseButtonAriaLabel(): void {
+    if (this.#closeButtonAriaLabel) {
+      this.#closeBtn.setAttribute('aria-label', this.#closeButtonAriaLabel);
+      return;
+    }
     const titleEl = Array.from(this.children).find((c) => c.getAttribute('slot') === 'title');
     const text = titleEl?.textContent?.trim();
     this.#closeBtn.setAttribute('aria-label', text ? `Close: ${text}` : 'Close toast');

@@ -25,6 +25,9 @@ export interface ToastOptions {
   toasterId?: string;
   /** Set as `data-testid` on the toast host element. Survives promise transitions. */
   testId?: string;
+  /** Accessible name for this toast's close button. Defaults to `Close: <title>`
+   *  (or `Close toast` when there is no title). */
+  closeButtonAriaLabel?: string;
   description?: ToastContent;
   duration?: number;
   dismissible?: boolean;
