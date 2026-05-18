@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en" data-theme="sonner-light">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%sveltekit.assets%/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+      // Pre-paint: pick theme before SK hydrates to avoid FOUC.
+      // localStorage 'theme' is the user preference: 'light' | 'dark' | 'system'.
+      // Absent = 'system'. Resolved data-theme is 'sonner-light' | 'sonner-dark'.
+      (function () {
+        try {
+          var pref = localStorage.getItem('theme') || 'system';
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var resolved =
+            pref === 'system'
+              ? prefersDark
+                ? 'sonner-dark'
+                : 'sonner-light'
+              : pref === 'dark'
+                ? 'sonner-dark'
+                : 'sonner-light';
+          document.documentElement.setAttribute('data-theme', resolved);
+        } catch (_) {}
+      })();
+    </script>
+    %sveltekit.head%
+  </head>
+  <body data-sveltekit-preload-data="hover" class="bg-base-100 text-base-content">
+    <div style="display: contents">%sveltekit.body%</div>
+  </body>
+</html>
