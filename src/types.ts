@@ -20,6 +20,9 @@ export interface ToastAction {
 
 export interface ToastOptions {
   id?: string | number;
+  /** Route this toast to a specific `<sonner-toaster>` by its DOM `id`.
+   *  Falls back to the default toaster if no element with that id is a toaster. */
+  toasterId?: string;
   description?: ToastContent;
   duration?: number;
   dismissible?: boolean;

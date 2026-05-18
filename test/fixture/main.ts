@@ -9,6 +9,13 @@ declare global {
 const { toast } = window;
 const params = new URLSearchParams(window.location.search);
 
+// Secondary toaster for multi-toaster routing tests. Appended first so the
+// primary (#toaster) ends up as the default (defaultToaster() = last registered).
+const secondary = document.createElement('sonner-toaster');
+secondary.id = 'secondary';
+secondary.setAttribute('position', 'top-left');
+document.body.appendChild(secondary);
+
 const toaster = document.createElement('sonner-toaster');
 if (params.get('position')) toaster.setAttribute('position', params.get('position')!);
 if (params.get('theme')) toaster.setAttribute('theme', params.get('theme')!);
@@ -162,6 +169,14 @@ btn('node-description', 'Node description', () =>
       return span;
     },
   }),
+);
+
+// ── Multi-toaster routing ───────────────────────────────
+btn('toast-secondary', 'Toast → secondary', () =>
+  toast('Secondary Toaster Toast', { toasterId: 'secondary', duration: Infinity }),
+);
+btn('toast-global', 'Toast → global', () =>
+  toast('Global Toaster Toast', { duration: Infinity }),
 );
 
 btn('dismiss-all', 'Dismiss all', () => toast.dismiss());

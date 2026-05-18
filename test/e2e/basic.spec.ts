@@ -167,7 +167,7 @@ test.describe('Basic functionality', () => {
 
   test("toaster's theme should be light", async ({ page }) => {
     await page.getByTestId('infinity-toast').click();
-    await expect(page.locator('[data-sonner-toaster]')).toHaveAttribute(
+    await expect(page.locator('sonner-toaster#toaster')).toHaveAttribute(
       'data-sonner-theme',
       'light',
     );
@@ -176,7 +176,7 @@ test.describe('Basic functionality', () => {
   test("toaster's theme should be dark", async ({ page }) => {
     await page.goto('/?theme=dark');
     await page.getByTestId('infinity-toast').click();
-    await expect(page.locator('[data-sonner-toaster]')).toHaveAttribute(
+    await expect(page.locator('sonner-toaster#toaster')).toHaveAttribute(
       'data-sonner-theme',
       'dark',
     );
@@ -184,12 +184,12 @@ test.describe('Basic functionality', () => {
 
   test("toaster's theme should be changed", async ({ page }) => {
     await page.getByTestId('infinity-toast').click();
-    await expect(page.locator('[data-sonner-toaster]')).toHaveAttribute(
+    await expect(page.locator('sonner-toaster#toaster')).toHaveAttribute(
       'data-sonner-theme',
       'light',
     );
     await page.getByTestId('theme-button').click();
-    await expect(page.locator('[data-sonner-toaster]')).toHaveAttribute(
+    await expect(page.locator('sonner-toaster#toaster')).toHaveAttribute(
       'data-sonner-theme',
       'dark',
     );
@@ -198,7 +198,7 @@ test.describe('Basic functionality', () => {
   test("toaster's dir prop is reflected correctly", async ({ page }) => {
     await page.goto('/?dir=rtl');
     await page.getByTestId('default-button').click();
-    await expect(page.locator('[data-sonner-toaster]')).toHaveAttribute('dir', 'rtl');
+    await expect(page.locator('sonner-toaster#toaster')).toHaveAttribute('dir', 'rtl');
   });
 
   test('show correct toast content when updating', async ({ page }) => {
@@ -222,6 +222,22 @@ test.describe('Basic functionality', () => {
   test('string description is rendered', async ({ page }) => {
     await page.getByTestId('string-description').click();
     await expect(page.getByText('string description')).toHaveCount(1);
+  });
+
+  test('toast with toasterId only appears in the targeted Toaster', async ({ page }) => {
+    await page.getByTestId('toast-secondary').click();
+    const secondary = page.locator('sonner-toaster#secondary');
+    await expect(secondary.getByText('Secondary Toaster Toast')).toHaveCount(1);
+    const global = page.locator('sonner-toaster#toaster');
+    await expect(global.getByText('Secondary Toaster Toast')).toHaveCount(0);
+  });
+
+  test('toast without toasterId only appears in the default Toaster', async ({ page }) => {
+    await page.getByTestId('toast-global').click();
+    const global = page.locator('sonner-toaster#toaster');
+    await expect(global.getByText('Global Toaster Toast')).toHaveCount(1);
+    const secondary = page.locator('sonner-toaster#secondary');
+    await expect(secondary.getByText('Global Toaster Toast')).toHaveCount(0);
   });
 
   test('Node description is rendered', async ({ page }) => {

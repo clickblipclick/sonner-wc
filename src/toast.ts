@@ -14,7 +14,11 @@ interface CreateOptions extends ToastOptions {
   type?: ToastType;
 }
 
-function ensureToaster(): SonnerToaster {
+function ensureToaster(toasterId?: string): SonnerToaster {
+  if (toasterId) {
+    const byId = document.getElementById(toasterId);
+    if (byId instanceof SonnerToaster) return byId;
+  }
   let host = defaultToaster() as SonnerToaster | undefined;
   if (!host) {
     host = document.createElement('sonner-toaster') as SonnerToaster;
@@ -34,7 +38,7 @@ function buildOrUpdate(options: CreateOptions): SonnerToastElement {
   el.toastId = id;
   el.update(options);
   el.setHandlers({ onDismiss: options.onDismiss, onAutoClose: options.onAutoClose });
-  ensureToaster().addToast(el);
+  ensureToaster(options.toasterId).addToast(el);
   return el;
 }
 
@@ -69,7 +73,7 @@ function custom(
   const content = builder(id);
   el.appendChild(content);
   el.setHandlers({ onDismiss: opts?.onDismiss, onAutoClose: opts?.onAutoClose });
-  ensureToaster().addToast(el);
+  ensureToaster(opts?.toasterId).addToast(el);
   return el;
 }
 
