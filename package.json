@@ -39,6 +39,8 @@
     "dev:site": "cd site && bun run dev",
     "dev": "concurrently -n wc,site -c blue,magenta \"bun run dev:wc\" \"bun run dev:site\"",
     "test": "bun test",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
     "typecheck": "bunx tsc --noEmit",
     "format": "prettier --write \"**/*.{ts,js,css,html,md,json}\"",
     "format:check": "prettier --check \"**/*.{ts,js,css,html,md,json}\"",
@@ -57,6 +59,7 @@
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.2",
     "@happy-dom/global-registrator": "^20.9.0",
+    "@playwright/test": "^1.60.0",
     "@types/bun": "latest",
     "concurrently": "^9.2.1",
     "prettier": "^3.8.3",
