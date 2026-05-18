@@ -96,4 +96,6 @@ export interface SonnerToasterElement extends HTMLElement {
   /** Append a freshly-built sonner-toast element. Returns the element for chaining/updating. */
   addToast(el: SonnerToastElement): SonnerToastElement;
   dismissAll(): void;
+  /** Re-announce `text` via the toaster's dedicated assertive live region. */
+  announceUrgent(text: string): void;
 }

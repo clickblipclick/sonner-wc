@@ -57,6 +57,7 @@ export class SonnerToaster extends HTMLElementCtor implements SonnerToasterEleme
   }
 
   #shadow: ShadowRoot;
+  #alertAnnouncer!: HTMLDivElement;
   #childObserver: MutationObserver;
   #resizeObserver: ResizeObserver;
   #toasts: SonnerToast[] = [];
@@ -75,7 +76,17 @@ export class SonnerToaster extends HTMLElementCtor implements SonnerToasterEleme
     super();
     this.#shadow = this.attachShadow({ mode: 'open' });
     this.#shadow.adoptedStyleSheets = [getToasterSheet()];
-    this.#shadow.innerHTML = '<div data-frame part="frame"><slot></slot></div>';
+    // Dedicated alert region for urgent re-announcements (e.g. promise
+    // loading → error). Browser/SR support for changing a toast's own
+    // aria-live mid-flight is inconsistent; routing the new text through
+    // a fresh, stable live region guarantees the alert is announced.
+    this.#shadow.innerHTML =
+      '<div data-frame part="frame"><slot></slot></div>' +
+      '<div data-alert-announcer role="alert" aria-live="assertive" aria-atomic="true" ' +
+      'style="position:absolute;left:0;top:0;width:1px;height:1px;margin:-1px;padding:0;' +
+      'overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0;' +
+      'pointer-events:none"></div>';
+    this.#alertAnnouncer = this.#shadow.querySelector('[data-alert-announcer]') as HTMLDivElement;
 
     this.#childObserver = new MutationObserver((records) => {
       let changed = false;
@@ -200,6 +211,19 @@ export class SonnerToaster extends HTMLElementCtor implements SonnerToasterEleme
   addToast(el: SonnerToastElement): SonnerToastElement {
     this.appendChild(el);
     return el;
+  }
+
+  /** Re-announce `text` through the dedicated assertive live region. Used when
+   *  a toast transitions to an urgent type (error/warning) after mount — the
+   *  toast's own aria-live change is unreliable across screen readers, so we
+   *  route the alert through a fresh region whose announcement behavior is
+   *  consistent. The clear-then-set pattern forces SRs that diff content to
+   *  treat the new text as a new announcement. */
+  announceUrgent(text: string): void {
+    this.#alertAnnouncer.textContent = '';
+    requestAnimationFrame(() => {
+      this.#alertAnnouncer.textContent = text;
+    });
   }
 
   dismissAll(): void {
@@ -358,6 +382,11 @@ export class SonnerToaster extends HTMLElementCtor implements SonnerToasterEleme
       toast.setAttribute('data-front', String(isFront));
       toast.setAttribute('data-visible', String(i + 1 <= visibleAmount));
       toast.setAttribute('data-expanded', String(expanded));
+      // Hide non-front toasts from assistive tech when collapsed: they're
+      // visually stacked behind and shouldn't compete with the front toast
+      // for screen-reader attention. Expanding the stack reveals them again.
+      if (expanded || isFront) toast.removeAttribute('aria-hidden');
+      else toast.setAttribute('aria-hidden', 'true');
     }
   }
 

@@ -76,13 +76,14 @@ test.describe('Basic functionality', () => {
 
   test('promise toast with extended error configuration', async ({ page }) => {
     await page.getByTestId('extended-promise-error').click();
-    await expect(page.getByText('Loading...')).toHaveCount(1);
-    await expect(page.getByText('An error occurred')).toHaveCount(1);
+    const toastEl = page.locator('[data-sonner-toast]');
+    await expect(toastEl.getByText('Loading...')).toHaveCount(1);
+    await expect(toastEl.getByText('An error occurred')).toHaveCount(1);
 
     const retry = page.getByRole('button', { name: 'Retry' });
     await expect(retry).toHaveCount(1);
     await retry.click();
-    await expect(page.getByText('An error occurred')).toHaveCount(1);
+    await expect(toastEl.getByText('An error occurred')).toHaveCount(1);
   });
 
   test('promise toast with Error object rejection', async ({ page }) => {
@@ -234,6 +235,31 @@ test.describe('Basic functionality', () => {
   test('string description is rendered', async ({ page }) => {
     await page.getByTestId('string-description').click();
     await expect(page.getByText('string description')).toHaveCount(1);
+  });
+
+  test('stacked-behind toasts are hidden from assistive tech', async ({ page }) => {
+    await page.getByTestId('infinity-toast').click();
+    await page.getByTestId('infinity-toast').click();
+    const toasts = page.locator('sonner-toaster#toaster [data-sonner-toast]');
+    await expect(toasts).toHaveCount(2);
+    // Toasts are appended in arrival order. The newer one is the visual
+    // front; the older one sits behind it and should be aria-hidden.
+    const front = page.locator('sonner-toaster#toaster [data-sonner-toast][data-front="true"]');
+    const behind = page.locator('sonner-toaster#toaster [data-sonner-toast][data-front="false"]');
+    await expect(front).not.toHaveAttribute('aria-hidden');
+    await expect(behind).toHaveAttribute('aria-hidden', 'true');
+    // Expanding the stack (hover the front toast → mouseenter bubbles to the
+    // toaster, which flips data-expanded on the children) exposes the rest.
+    const box = await front.boundingBox();
+    if (!box) throw new Error('front toast not visible');
+    await page.mouse.move(box.x + box.width / 2, box.y + 10);
+    await expect(behind).not.toHaveAttribute('aria-hidden');
+  });
+
+  test('urgent post-mount transitions announce via the alert region', async ({ page }) => {
+    await page.getByTestId('extended-promise-error').click();
+    const announcer = page.locator('sonner-toaster#toaster [data-alert-announcer]');
+    await expect(announcer).toHaveText('An error occurred');
   });
 
   test('toast has aria-atomic="true"', async ({ page }) => {

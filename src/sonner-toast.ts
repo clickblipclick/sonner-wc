@@ -9,6 +9,7 @@ import { registerToast, unregisterToast } from './registry.js';
 import { getToastSheet } from './styles.js';
 import type {
   SonnerToastElement,
+  SonnerToasterElement,
   SwipeDirection,
   ToastAction,
   ToastContent,
@@ -22,6 +23,10 @@ const HTMLElementCtor: typeof HTMLElement =
   typeof HTMLElement !== 'undefined' ? HTMLElement : (class {} as unknown as typeof HTMLElement);
 
 type PauseReason = 'hover-self' | 'focus-self' | 'doc-hidden' | 'toaster';
+
+function isUrgentType(type: ToastType): boolean {
+  return type === 'error' || type === 'warning';
+}
 
 function setContent(host: HTMLElement, slotName: string, value: ToastContent | undefined): void {
   // Remove prior light DOM child(ren) with this slot name.
@@ -279,6 +284,7 @@ export class SonnerToast extends HTMLElementCtor implements SonnerToastElement {
   /** Apply new content/options. Used by toast.promise() for loading→success/error transitions. */
   update(options: ToastOptions & { title?: ToastContent; type?: ToastType }): void {
     const typeChanged = options.type !== undefined && options.type !== this.toastType;
+    const wasUrgent = isUrgentType(this.toastType);
     if (options.type !== undefined) this.setAttribute('type', options.type);
     let timerNeedsReset = false;
     if (options.duration !== undefined) {
@@ -330,6 +336,18 @@ export class SonnerToast extends HTMLElementCtor implements SonnerToastElement {
     if (options.onDismiss) this.#onDismiss = options.onDismiss;
     if (options.onAutoClose) this.#onAutoClose = options.onAutoClose;
     if (timerNeedsReset) this.#resetTimer();
+    // Route urgent post-mount transitions (e.g. promise loading → error)
+    // through the toaster's dedicated alert region. Re-evaluation of the
+    // toast's own aria-live attribute is unreliable across screen readers;
+    // the alert region is fresh and consistent.
+    if (this.#mounted && typeChanged && !wasUrgent && isUrgentType(this.toastType)) {
+      const titleEl = Array.from(this.children).find((c) => c.getAttribute('slot') === 'title');
+      const text = titleEl?.textContent?.trim();
+      if (text) {
+        const toaster = this.closest('sonner-toaster') as SonnerToasterElement | null;
+        toaster?.announceUrgent(text);
+      }
+    }
     this.dispatchEvent(new CustomEvent('sonner-toast-updated', { bubbles: true, composed: true }));
   }
 
@@ -401,7 +419,7 @@ export class SonnerToast extends HTMLElementCtor implements SonnerToastElement {
   #applyType() {
     const type = this.toastType;
     this.setAttribute('data-type', type);
-    const urgent = type === 'error' || type === 'warning';
+    const urgent = isUrgentType(type);
     this.setAttribute('role', urgent ? 'alert' : 'status');
     this.setAttribute('aria-live', urgent ? 'assertive' : 'polite');
     if (type === 'loading') {
