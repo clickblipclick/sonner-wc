@@ -23,6 +23,8 @@ export interface ToastOptions {
   /** Route this toast to a specific `<sonner-toaster>` by its DOM `id`.
    *  Falls back to the default toaster if no element with that id is a toaster. */
   toasterId?: string;
+  /** Set as `data-testid` on the toast host element. Survives promise transitions. */
+  testId?: string;
   description?: ToastContent;
   duration?: number;
   dismissible?: boolean;

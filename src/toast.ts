@@ -70,6 +70,7 @@ function custom(
   if (opts?.duration !== undefined) el.setAttribute('duration', String(opts.duration));
   if (opts?.dismissible === false) el.setAttribute('dismissible', 'false');
   if (opts?.position) el.setAttribute('position', opts.position);
+  if (opts?.testId !== undefined) el.setAttribute('data-testid', opts.testId);
   const content = builder(id);
   el.appendChild(content);
   el.setHandlers({ onDismiss: opts?.onDismiss, onAutoClose: opts?.onAutoClose });

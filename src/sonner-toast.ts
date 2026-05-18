@@ -290,6 +290,7 @@ export class SonnerToast extends HTMLElementCtor implements SonnerToastElement {
       setButtonSlot(this, 'cancel', options.cancel, () => this.dismiss());
     }
     if (options.className) this.className = options.className;
+    if (options.testId !== undefined) this.setAttribute('data-testid', options.testId);
     if (options.onDismiss) this.#onDismiss = options.onDismiss;
     if (options.onAutoClose) this.#onAutoClose = options.onAutoClose;
     if (timerNeedsReset) this.#resetTimer();

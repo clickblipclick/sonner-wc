@@ -171,6 +171,21 @@ btn('node-description', 'Node description', () =>
   }),
 );
 
+// ── testId ───────────────────────────────────────────────
+btn('testid-toast-button', 'Toast with testId', () =>
+  toast('Toast with test ID', { testId: 'my-test-toast', duration: Infinity }),
+);
+btn('testid-promise-toast-button', 'Promise with testId', () => {
+  const p = new Promise<string>((resolve) => setTimeout(() => resolve('Loaded'), 200));
+  toast.promise(p, {
+    loading: 'Loading...',
+    success: 'Loaded',
+    error: 'Failed',
+    testId: 'promise-test-toast',
+    duration: Infinity,
+  });
+});
+
 // ── Multi-toaster routing ───────────────────────────────
 btn('toast-secondary', 'Toast → secondary', () =>
   toast('Secondary Toaster Toast', { toasterId: 'secondary', duration: Infinity }),
