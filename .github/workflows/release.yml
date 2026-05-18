@@ -37,7 +37,7 @@ jobs:
           fi
 
       - run: bun run typecheck
-      - run: bun test
+      - run: bun run test
       - run: bun run lint:exports
 
       - name: Cache Playwright browsers
