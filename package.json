@@ -38,7 +38,7 @@
     "dev:wc": "bun run scripts/dev.ts",
     "dev:site": "cd site && bun run dev",
     "dev": "concurrently -n wc,site -c blue,magenta \"bun run dev:wc\" \"bun run dev:site\"",
-    "test": "bun test",
+    "test": "bun test test/toast.test.ts",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "typecheck": "bunx tsc --noEmit",
