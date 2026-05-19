@@ -57,6 +57,12 @@
   display: block;
 }
 
+:host(:focus-visible) {
+  outline: 2px solid var(--gray9);
+  outline-offset: 4px;
+  border-radius: var(--border-radius);
+}
+
 [data-frame] {
   display: block;
   width: 100%;

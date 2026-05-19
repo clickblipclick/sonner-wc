@@ -132,6 +132,7 @@ export class SonnerToaster extends HTMLElementCtor implements SonnerToasterEleme
     if (!this.hasAttribute('role')) this.setAttribute('role', 'region');
     if (!this.hasAttribute('aria-label'))
       this.setAttribute('aria-label', this.getAttribute('container-aria-label') ?? 'Notifications');
+    this.#applyHotkeyHints();
     this.setAttribute('data-sonner-toaster', '');
     this.#applyPosition();
     this.#applyTheme();
@@ -202,6 +203,9 @@ export class SonnerToaster extends HTMLElementCtor implements SonnerToasterEleme
         break;
       case 'container-aria-label':
         this.setAttribute('aria-label', this.getAttribute('container-aria-label') ?? 'Notifications');
+        break;
+      case 'hotkey':
+        this.#applyHotkeyHints();
         break;
     }
   }
@@ -427,6 +431,8 @@ export class SonnerToaster extends HTMLElementCtor implements SonnerToasterEleme
   #onWindowResize = () => this.#reflow({ remeasure: true });
 
   #onKeyDown = (event: KeyboardEvent) => {
+    // Defer to consumer handlers that already claimed this event.
+    if (event.defaultPrevented) return;
     // Don't hijack the hotkey when the user is typing.
     const target = event.target as HTMLElement | null;
     if (target) {
@@ -436,12 +442,20 @@ export class SonnerToaster extends HTMLElementCtor implements SonnerToasterEleme
       }
     }
     const hotkey = this.#hotkey();
-    const matches = hotkey.every((key) => {
-      if (key === 'altKey' || key === 'ctrlKey' || key === 'shiftKey' || key === 'metaKey') {
-        return event[key as 'altKey'];
-      }
-      return event.code === key;
-    });
+    // Empty hotkey opts out entirely (e.g. `hotkey=""` or `hotkey="none"`),
+    // but still allow Escape-to-collapse below.
+    const allModifiers = ['altKey', 'ctrlKey', 'shiftKey', 'metaKey'] as const;
+    const matches =
+      hotkey.length > 0 &&
+      hotkey.every((key) => {
+        if ((allModifiers as readonly string[]).includes(key)) {
+          return event[key as 'altKey'];
+        }
+        return event.code === key;
+      }) &&
+      // Strict modifier match: unlisted modifiers must not be held, so e.g.
+      // Ctrl+Alt+T doesn't accidentally trigger an Alt+T hotkey.
+      allModifiers.every((m) => hotkey.includes(m) || !event[m]);
     if (matches) {
       this.#expanded = true;
       for (const t of this.#toasts) t.setPaused(true);
@@ -458,9 +472,56 @@ export class SonnerToaster extends HTMLElementCtor implements SonnerToasterEleme
 
   #hotkey(): readonly string[] {
     const raw = this.getAttribute('hotkey');
-    if (!raw) return DEFAULT_HOTKEY;
-    return raw.split('+').map((s) => s.trim());
+    if (raw === null) return DEFAULT_HOTKEY;
+    // Explicit opt-out: `hotkey=""` or `hotkey="none"`.
+    const trimmed = raw.trim();
+    if (trimmed === '' || trimmed.toLowerCase() === 'none') return [];
+    return trimmed.split('+').map((s) => s.trim());
   }
+
+  // Reflect the current hotkey as `aria-keyshortcuts` (for AT) and `title` (for
+  // sighted users) so the otherwise-undiscoverable shortcut surfaces somewhere.
+  // Only applied when those attributes aren't already set by the consumer.
+  // When the hotkey is opted out, remove anything we previously set.
+  #applyHotkeyHints() {
+    const formatted = formatHotkeyForAria(this.#hotkey());
+    if (!formatted) {
+      if (this.#ownsAriaKeyshortcuts) {
+        this.removeAttribute('aria-keyshortcuts');
+        this.#ownsAriaKeyshortcuts = false;
+      }
+      if (this.#ownsTitle) {
+        this.removeAttribute('title');
+        this.#ownsTitle = false;
+      }
+      return;
+    }
+    if (!this.hasAttribute('aria-keyshortcuts') || this.#ownsAriaKeyshortcuts) {
+      this.setAttribute('aria-keyshortcuts', formatted);
+      this.#ownsAriaKeyshortcuts = true;
+    }
+    if (!this.hasAttribute('title') || this.#ownsTitle) {
+      this.setAttribute('title', `Press ${formatted} to expand notifications`);
+      this.#ownsTitle = true;
+    }
+  }
+  #ownsAriaKeyshortcuts = false;
+  #ownsTitle = false;
+}
+
+function formatHotkeyForAria(tokens: readonly string[]): string {
+  if (tokens.length === 0) return '';
+  return tokens
+    .map((t) => {
+      if (t === 'altKey') return 'Alt';
+      if (t === 'ctrlKey') return 'Control';
+      if (t === 'shiftKey') return 'Shift';
+      if (t === 'metaKey') return 'Meta';
+      if (/^Key[A-Z]$/.test(t)) return t.slice(3);
+      if (/^Digit[0-9]$/.test(t)) return t.slice(5);
+      return t;
+    })
+    .join('+');
 }
 
 if (typeof customElements !== 'undefined' && !customElements.get('sonner-toaster')) {
