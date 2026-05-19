@@ -8,12 +8,9 @@ permissions:
   contents: read
 
 jobs:
-  publish:
+  verify:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    permissions:
-      contents: write   # create GitHub Release
-      id-token: write   # npm provenance / OIDC trusted publishing
     steps:
       - uses: actions/checkout@v6
         with:
@@ -22,19 +19,6 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.2.5
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version: '22'
-          registry-url: 'https://registry.npmjs.org'
-
-      # Node 22 ships with npm 10, but trusted-publisher OIDC needs 11.5+.
-      # The bundled npm in the Node 22 toolcache image is also missing some
-      # of its own deps, so `npm i -g npm@latest` fails. Use corepack to
-      # install a clean npm independently of the bundled one.
-      - run: corepack enable npm
-      - run: corepack prepare npm@latest --activate
-      - run: npm --version
 
       - run: bun install --frozen-lockfile
 
@@ -58,6 +42,43 @@ jobs:
           key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
       - run: bunx playwright install --with-deps chromium
       - run: bun run test:e2e -- --project=chromium
+
+  publish:
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Required-reviewer gate. The environment is restricted to v*.*.* tags
+    # in its protection rules, so only release tags can reach this job.
+    environment:
+      name: npm-publish
+      url: https://www.npmjs.com/package/sonner-wc
+    permissions:
+      contents: write   # create GitHub Release
+      id-token: write   # npm provenance / OIDC trusted publishing
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      # Node 22 ships with npm 10, but trusted-publisher OIDC needs 11.5+.
+      # The bundled npm in the Node 22 toolcache image is also missing some
+      # of its own deps, so `npm i -g npm@latest` fails. Use corepack to
+      # install a clean npm independently of the bundled one.
+      - run: corepack enable npm
+      - run: corepack prepare npm@latest --activate
+      - run: npm --version
+
+      - run: bun install --frozen-lockfile
+      - run: bun run lint:exports   # produces dist/ for the publish step
 
       - name: Publish to npm
         run: npm publish --provenance --access public
