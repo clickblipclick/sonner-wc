@@ -6,6 +6,7 @@ import {
 } from './constants.js';
 import { CLOSE_ICON, getTypeIcon } from './icons.js';
 import { registerToast, unregisterToast } from './registry.js';
+import { HTMLElementCtor } from './ssr.js';
 import { getToastSheet } from './styles.js';
 import type {
   SonnerToastElement,
@@ -16,11 +17,6 @@ import type {
   ToastOptions,
   ToastType,
 } from './types.js';
-
-// SSR-safe: when imported in Node without a DOM, fall back to a no-op base class.
-// The element won't function server-side but the import won't crash.
-const HTMLElementCtor: typeof HTMLElement =
-  typeof HTMLElement !== 'undefined' ? HTMLElement : (class {} as unknown as typeof HTMLElement);
 
 type PauseReason = 'hover-self' | 'focus-self' | 'doc-hidden' | 'toaster';
 
@@ -493,7 +489,7 @@ export class SonnerToast extends HTMLElementCtor implements SonnerToastElement {
     if (raw == null) return null;
     if (raw === 'Infinity') return Infinity;
     const n = Number(raw);
-    return Number.isFinite(n) || n === Infinity ? n : null;
+    return Number.isFinite(n) ? n : null;
   }
 
   #effectiveDuration(): number {

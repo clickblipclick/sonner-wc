@@ -1,7 +1,8 @@
 import { DEFAULT_HOTKEY, GAP, TOAST_WIDTH, VISIBLE_TOASTS_AMOUNT } from './constants.js';
 import { registerToaster, unregisterToaster } from './registry.js';
-import { getToasterSheet } from './styles.js';
 import { SonnerToast } from './sonner-toast.js';
+import { HTMLElementCtor } from './ssr.js';
+import { getToasterSheet } from './styles.js';
 import type {
   Position,
   SonnerToastElement,
@@ -9,9 +10,6 @@ import type {
   Theme,
   ToasterOptions,
 } from './types.js';
-
-const HTMLElementCtor: typeof HTMLElement =
-  typeof HTMLElement !== 'undefined' ? HTMLElement : (class {} as unknown as typeof HTMLElement);
 
 function parseOffsetValue(v: string | number | undefined, fallback: string): string {
   if (v == null) return fallback;
