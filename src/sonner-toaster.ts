@@ -242,10 +242,16 @@ export class SonnerToaster extends HTMLElementCtor implements SonnerToasterEleme
     return (this.getAttribute('position') as Position) || 'bottom-right';
   }
 
-  #applyPosition() {
+  /** Write the toaster's current position to `target` as `data-y-position` /
+   *  `data-x-position`. Used on the toaster itself and on each child toast. */
+  #applyPositionTo(target: HTMLElement) {
     const [y, x] = this.#getPosition().split('-');
-    if (y) this.setAttribute('data-y-position', y);
-    if (x) this.setAttribute('data-x-position', x);
+    if (y) target.setAttribute('data-y-position', y);
+    if (x) target.setAttribute('data-x-position', x);
+  }
+
+  #applyPosition() {
+    this.#applyPositionTo(this);
   }
 
   #applyTheme() {
@@ -295,11 +301,7 @@ export class SonnerToaster extends HTMLElementCtor implements SonnerToasterEleme
 
   #applyToastPositions() {
     for (const t of this.#toasts) {
-      if (!t.hasAttribute('position')) {
-        const [y, x] = this.#getPosition().split('-');
-        if (y) t.setAttribute('data-y-position', y);
-        if (x) t.setAttribute('data-x-position', x);
-      }
+      if (!t.hasAttribute('position')) this.#applyPositionTo(t);
     }
   }
 
@@ -317,11 +319,7 @@ export class SonnerToaster extends HTMLElementCtor implements SonnerToasterEleme
   }
 
   #decorateToast(toast: SonnerToast) {
-    if (!toast.hasAttribute('position')) {
-      const [y, x] = this.#getPosition().split('-');
-      if (y) toast.setAttribute('data-y-position', y);
-      if (x) toast.setAttribute('data-x-position', x);
-    }
+    if (!toast.hasAttribute('position')) this.#applyPositionTo(toast);
     if (!toast.hasAttribute('duration')) {
       const inherit = this.getAttribute('duration');
       if (inherit) toast.setAttribute('duration', inherit);
