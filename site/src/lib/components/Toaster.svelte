@@ -12,7 +12,8 @@
   // Map the site's data-theme on <html> to the WC's theme attribute.
   // The site already resolves prefers-color-scheme into sonner-light/sonner-dark
   // via the pre-paint script in app.html, so we don't need theme="system" here.
-  let theme = $state<'light' | 'dark'>(pinnedTheme ?? 'light');
+  let observedTheme = $state<'light' | 'dark'>('light');
+  const theme = $derived(pinnedTheme ?? observedTheme);
 
   function readTheme(): 'light' | 'dark' {
     const t = document.documentElement.getAttribute('data-theme');
@@ -22,9 +23,9 @@
   onMount(() => {
     void import('$lib/sonner-wc');
     if (pinnedTheme) return;
-    theme = readTheme();
+    observedTheme = readTheme();
     const obs = new MutationObserver(() => {
-      theme = readTheme();
+      observedTheme = readTheme();
     });
     obs.observe(document.documentElement, {
       attributes: true,

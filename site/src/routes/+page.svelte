@@ -13,7 +13,9 @@
 <section class="mx-auto max-w-3xl px-4 pt-16 pb-12 text-center">
   <h1 class="text-5xl font-semibold tracking-tight">sonner-wc</h1>
   <p class="mx-auto mt-4 max-w-xl text-lg text-base-content/70">
-    Sonner's toast UX as a framework-agnostic Web Component. Drop it into
+    <a href="https://sonner.emilkowal.ski/" class="text-primary underline hover:text-accent" target="_blank" rel="noreferrer noopener">
+      Sonner
+    </a>'s toast UX as a framework-agnostic Web Component. Drop it into
     anything — vanilla HTML, React, Vue, Svelte — same API, same look, no
     framework dependencies.
   </p>

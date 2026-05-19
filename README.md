@@ -17,7 +17,7 @@ Drop it into anything — vanilla HTML, Vue, Svelte, htmx — same API, same loo
 ## Install
 
 ```sh
-bun add sonner-wc           # or npm / pnpm / yarn
+npm install sonner-wc           # or bun / pnpm / yarn
 ```
 
 ESM only. Modern browsers (last two versions of Chrome, Firefox, Safari, Edge).
@@ -41,7 +41,8 @@ Place once, anywhere in the page. Configure with attributes.
 | `visible-toasts` | how many toasts fan out vs. stack behind                                         | `3`            |
 | `offset`         | viewport gutter; px number or CSS length                                         | `24px`         |
 | `mobile-offset`  | gutter under 600px                                                               | `16px`         |
-| `hotkey`         | `Alt+KeyT`-style chord that expands the stack                                    | `altKey+KeyT`  |
+| `hotkey`         | `Alt+KeyT`-style chord that expands the stack; `""` or `"none"` disables it      | `altKey+KeyT`  |
+| `container-aria-label` | Accessible name for the toaster region. Reactive — changes after mount take effect. | `Notifications` |
 
 ### The `toast()` helper
 
@@ -79,6 +80,60 @@ toast.dismiss(); // all
 
 The returned element is the `<sonner-toast>` itself. You can mutate it directly — set
 attributes, add children, call `.dismiss()`, etc.
+
+### `toast()` options
+
+The second argument to `toast()` (and its variants) accepts:
+
+| Option                 | Type                                | Notes                                                                                          |
+| ---------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `id`                   | `string \| number`                  | Reuse to update a toast in place; pass the same `id` again to `toast.*()`.                     |
+| `toasterId`            | `string`                            | DOM `id` of a specific `<sonner-toaster>` to route this toast to. Falls back to the default.   |
+| `testId`               | `string`                            | Set as `data-testid` on the toast host. Survives promise loading → success/error transitions.  |
+| `closeButtonAriaLabel` | `string`                            | Accessible name for the close button. Defaults to `Close: <title>` (or `Close toast`).         |
+| `description`          | `string \| Node \| () => …`         | Secondary text.                                                                                |
+| `duration`             | `number` (ms) or `Infinity`         | Lifetime override.                                                                             |
+| `dismissible`          | `boolean`                           | Set `false` to disable swipe / close-button dismissal.                                         |
+| `position`             | same as toaster                     | Per-toast position override.                                                                   |
+| `closeButton`          | `boolean`                           | Per-toast override of the toaster's `close-button` flag.                                       |
+| `richColors`           | `boolean`                           | Force rich colors on this toast.                                                               |
+| `invert`               | `boolean`                           | Force inverted colors on this toast.                                                           |
+| `icon`                 | `Node \| string`                    | Override the icon picked from `type`.                                                          |
+| `className`            | `string`                            | Extra class applied to the toast host.                                                         |
+| `action` / `cancel`    | `{ label, onClick }` or `HTMLElement` | Right/left button. Pass an element for full control.                                        |
+| `onDismiss`            | `(el) => void`                      | Called when the toast is dismissed (manually or via `toast.dismiss`).                          |
+| `onAutoClose`          | `(el) => void`                      | Called when the duration timer fires.                                                          |
+
+## Accessibility
+
+`sonner-wc` ships with reasonable defaults so you don't have to wire ARIA
+yourself:
+
+- The toaster is a labelled `region` (`aria-label="Notifications"` by
+  default; override with `container-aria-label`).
+- Each toast carries `aria-atomic="true"` so screen readers re-announce the
+  whole toast when its content changes (e.g. `toast.promise` loading →
+  success/error), not just the diff.
+- When the stack is collapsed, toasts behind the front one are
+  `aria-hidden="true"` so users aren't bombarded by visually obscured
+  toasts. Expanding the stack (hover, focus, or the configured `hotkey`)
+  reveals them.
+- Urgent transitions that happen *after* mount (e.g. a `loading` toast
+  becoming an `error`) are re-announced through a dedicated assertive
+  live region inside the toaster's shadow root. Re-evaluating a toast's
+  own `aria-live` is unreliable across screen readers; this region
+  guarantees the message lands.
+- Pressing **Escape** while focus is inside a toast dismisses it.
+- When a toast that captured focus is dismissed, focus is restored to
+  the element that was focused before the toast was entered — no more
+  stranded keyboard users on `<body>`.
+- Close buttons get an accessible name automatically (`Close: <title>`),
+  or whatever `closeButtonAriaLabel` you pass.
+- The toaster reflects its `hotkey` (default `Alt+T`) as both
+  `aria-keyshortcuts` and a `title` tooltip so the shortcut is
+  discoverable to screen-reader users and sighted users alike. A
+  `:focus-visible` ring shows where focus lands when the hotkey is
+  pressed.
 
 ### Declarative form
 

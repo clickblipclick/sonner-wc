@@ -2,6 +2,8 @@
   import { base } from '$app/paths';
 </script>
 
+<svelte:head><title>Quick start · sonner-wc</title></svelte:head>
+
 # Quick start
 
 Get a toast on screen in 30 seconds.

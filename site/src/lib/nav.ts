@@ -14,6 +14,7 @@ export const docsNav: NavGroup[] = [
     items: [
       { label: 'API', href: '/docs/api' },
       { label: 'Theming', href: '/docs/theming' },
+      { label: 'Accessibility', href: '/docs/accessibility' },
     ],
   },
 ];

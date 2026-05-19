@@ -1,3 +1,5 @@
+<svelte:head><title>Install · sonner-wc</title></svelte:head>
+
 # Install
 
 Three ways to add `sonner-wc` to a page.

@@ -39,8 +39,9 @@
       <tr><td><code>visible-toasts</code></td><td>number</td><td><code>3</code></td><td>How many toasts are fully visible before fading.</td></tr>
       <tr><td><code>offset</code></td><td>CSS length</td><td><code>24px</code></td><td>Distance from viewport edges.</td></tr>
       <tr><td><code>mobile-offset</code></td><td>CSS length</td><td><code>16px</code></td><td>Edge distance under 600px viewport width.</td></tr>
-      <tr><td><code>hotkey</code></td><td>chord string</td><td><code>altKey+KeyT</code></td><td>Keyboard chord that expands the stack.</td></tr>
+      <tr><td><code>hotkey</code></td><td>chord string, <code>""</code>, or <code>"none"</code></td><td><code>altKey+KeyT</code></td><td>Keyboard chord that expands the stack. Empty / <code>none</code> disables it.</td></tr>
       <tr><td><code>expand</code></td><td>boolean (presence)</td><td>off</td><td>Force-expand the stack even without hover.</td></tr>
+      <tr><td><code>container-aria-label</code></td><td>string</td><td><code>Notifications</code></td><td>Accessible name for the toaster region. Reactive — changes after mount take effect.</td></tr>
     </tbody>
   </table>
 </div>
@@ -75,6 +76,32 @@
       <tr><td><code>action</code></td><td>Right-aligned action button (e.g. Undo).</td></tr>
       <tr><td><code>cancel</code></td><td>Left-aligned cancel button.</td></tr>
       <tr><td>(default)</td><td>Used by <code>toast.custom()</code> for fully custom content.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2><code>toast()</code> options</h2>
+
+<p>The second argument to <code>toast()</code> (and its variants) accepts:</p>
+
+<div class="overflow-x-auto">
+  <table class="table table-sm">
+    <thead><tr><th>Option</th><th>Type</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>id</code></td><td><code>string | number</code></td><td>Reuse to update a toast in place.</td></tr>
+      <tr><td><code>toasterId</code></td><td><code>string</code></td><td>DOM <code>id</code> of a specific <code>&lt;sonner-toaster&gt;</code> to route this toast to. Falls back to the default toaster if no match.</td></tr>
+      <tr><td><code>testId</code></td><td><code>string</code></td><td>Set as <code>data-testid</code> on the toast host. Survives promise transitions.</td></tr>
+      <tr><td><code>closeButtonAriaLabel</code></td><td><code>string</code></td><td>Accessible name for the close button. Defaults to <code>Close: &lt;title&gt;</code>.</td></tr>
+      <tr><td><code>description</code></td><td><code>string | Node | () =&gt; …</code></td><td>Secondary text.</td></tr>
+      <tr><td><code>duration</code></td><td><code>number</code> or <code>Infinity</code></td><td>Lifetime override (ms).</td></tr>
+      <tr><td><code>dismissible</code></td><td><code>boolean</code></td><td>Set <code>false</code> to disable swipe / close-button dismissal.</td></tr>
+      <tr><td><code>position</code></td><td>same as toaster</td><td>Per-toast position override.</td></tr>
+      <tr><td><code>closeButton</code></td><td><code>boolean</code></td><td>Per-toast override of the toaster's <code>close-button</code> flag.</td></tr>
+      <tr><td><code>richColors</code> / <code>invert</code></td><td><code>boolean</code></td><td>Force the variant on this toast.</td></tr>
+      <tr><td><code>icon</code></td><td><code>Node | string</code></td><td>Override the icon picked from <code>type</code>.</td></tr>
+      <tr><td><code>className</code></td><td><code>string</code></td><td>Extra class applied to the toast host.</td></tr>
+      <tr><td><code>action</code> / <code>cancel</code></td><td><code>&#123; label, onClick &#125;</code> or <code>HTMLElement</code></td><td>Right / left button. Pass an element for full control.</td></tr>
+      <tr><td><code>onDismiss</code> / <code>onAutoClose</code></td><td><code>(el) =&gt; void</code></td><td>Lifecycle callbacks.</td></tr>
     </tbody>
   </table>
 </div>
