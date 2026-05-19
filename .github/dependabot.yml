@@ -1,0 +1,40 @@
+version: 2
+
+updates:
+  # npm deps for the package itself.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      # Bundle minor + patch updates into one PR per week. Major bumps still
+      # arrive as individual PRs so they get the attention they deserve.
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
+  # npm deps for the docs site.
+  - package-ecosystem: npm
+    directory: /site
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
+  # Pinned action versions across .github/workflows (actions/checkout, etc.).
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
