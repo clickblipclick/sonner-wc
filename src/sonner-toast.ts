@@ -99,24 +99,34 @@ const SPINNER_BARS_HTML = Array.from(
   () => '<div class="sonner-loading-bar"></div>',
 ).join('');
 
-const SHADOW_TEMPLATE = `
-  <div data-frame part="frame">
-    <button type="button" data-close-button part="close-button" hidden aria-label="Close toast"></button>
-    <div data-icon part="icon">
-      <slot name="icon"></slot>
-      <div class="sonner-loading-wrapper" aria-hidden="true">
-        <div class="sonner-spinner">${SPINNER_BARS_HTML}</div>
+// Parse once at module load: every `new SonnerToast()` then just clones this
+// template's content instead of re-creating a <template> element and re-parsing
+// the same HTML string. SSR-safe via the `typeof document` guard — the
+// constructor only runs in a real browser (custom elements aren't registered
+// without `customElements`), so the null branch never fires in practice.
+const SHADOW_TEMPLATE: HTMLTemplateElement | null = (() => {
+  if (typeof document === 'undefined') return null;
+  const tpl = document.createElement('template');
+  tpl.innerHTML = `
+    <div data-frame part="frame">
+      <button type="button" data-close-button part="close-button" hidden aria-label="Close toast"></button>
+      <div data-icon part="icon">
+        <slot name="icon"></slot>
+        <div class="sonner-loading-wrapper" aria-hidden="true">
+          <div class="sonner-spinner">${SPINNER_BARS_HTML}</div>
+        </div>
       </div>
+      <div data-content part="content">
+        <div data-title part="title"><slot name="title"></slot></div>
+        <div data-description part="description"><slot name="description"></slot></div>
+      </div>
+      <slot name="cancel"></slot>
+      <slot name="action"></slot>
+      <slot part="custom"></slot>
     </div>
-    <div data-content part="content">
-      <div data-title part="title"><slot name="title"></slot></div>
-      <div data-description part="description"><slot name="description"></slot></div>
-    </div>
-    <slot name="cancel"></slot>
-    <slot name="action"></slot>
-    <slot part="custom"></slot>
-  </div>
-`;
+  `;
+  return tpl;
+})();
 
 export class SonnerToast extends HTMLElementCtor implements SonnerToastElement {
   static get observedAttributes() {
@@ -157,9 +167,7 @@ export class SonnerToast extends HTMLElementCtor implements SonnerToastElement {
     super();
     this.#shadow = this.attachShadow({ mode: 'open' });
     this.#shadow.adoptedStyleSheets = [getToastSheet()];
-    const tpl = document.createElement('template');
-    tpl.innerHTML = SHADOW_TEMPLATE;
-    this.#shadow.appendChild(tpl.content.cloneNode(true));
+    this.#shadow.appendChild(SHADOW_TEMPLATE!.content.cloneNode(true));
     this.#closeBtn = this.#shadow.querySelector('[data-close-button]') as HTMLButtonElement;
     this.#iconWrap = this.#shadow.querySelector('[data-icon]') as HTMLDivElement;
     this.#titleWrap = this.#shadow.querySelector('[data-title]') as HTMLDivElement;
