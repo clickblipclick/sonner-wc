@@ -37,7 +37,7 @@ jobs:
           BASE_PATH: /sonner-wc
         run: cd site && bun run build
 
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v6
         with:
           # Auto-enable Pages on first run so a fresh repo deploys without
           # a manual Settings → Pages → Source: GitHub Actions step.
