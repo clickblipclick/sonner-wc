@@ -2,6 +2,14 @@
   "name": "sonner-wc",
   "version": "0.1.2",
   "description": "Sonner's toast UX as a framework-agnostic Web Component. Drop in anywhere.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/clickblipclick/sonner-wc.git"
+  },
+  "homepage": "https://clickblipclick.github.io/sonner-wc/",
+  "bugs": {
+    "url": "https://github.com/clickblipclick/sonner-wc/issues"
+  },
   "type": "module",
   "main": "./dist/sonner-wc.js",
   "module": "./dist/sonner-wc.js",
