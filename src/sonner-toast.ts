@@ -24,6 +24,17 @@ function isUrgentType(type: ToastType): boolean {
   return type === 'error' || type === 'warning';
 }
 
+/** Read an HTML attribute as boolean: present and not literally `"false"`. */
+function boolAttr(host: HTMLElement, name: string): boolean {
+  return host.hasAttribute(name) && host.getAttribute(name) !== 'false';
+}
+
+/** Set `name` to `""` when `on` is true; remove it otherwise. */
+function toggleAttr(host: HTMLElement, name: string, on: boolean): void {
+  if (on) host.setAttribute(name, '');
+  else host.removeAttribute(name);
+}
+
 /** Remove any light-DOM children currently assigned to `slotName`. */
 function clearSlot(host: HTMLElement, slotName: string): void {
   for (const child of Array.from(host.children)) {
@@ -309,23 +320,11 @@ export class SonnerToast extends HTMLElementCtor implements SonnerToastElement {
       this.#remainingTime = 0;
       timerNeedsReset = true;
     }
-    if (options.dismissible !== undefined) {
-      if (options.dismissible) this.setAttribute('dismissible', '');
-      else this.removeAttribute('dismissible');
-    }
+    if (options.dismissible !== undefined) toggleAttr(this, 'dismissible', options.dismissible);
     if (options.position !== undefined) this.setAttribute('position', options.position);
-    if (options.closeButton !== undefined) {
-      if (options.closeButton) this.setAttribute('close-button', '');
-      else this.removeAttribute('close-button');
-    }
-    if (options.richColors !== undefined) {
-      if (options.richColors) this.setAttribute('rich-colors', '');
-      else this.removeAttribute('rich-colors');
-    }
-    if (options.invert !== undefined) {
-      if (options.invert) this.setAttribute('invert', '');
-      else this.removeAttribute('invert');
-    }
+    if (options.closeButton !== undefined) toggleAttr(this, 'close-button', options.closeButton);
+    if (options.richColors !== undefined) toggleAttr(this, 'rich-colors', options.richColors);
+    if (options.invert !== undefined) toggleAttr(this, 'invert', options.invert);
     if (options.icon !== undefined) this.setIcon(options.icon);
     if (options.title !== undefined) this.setTitle(options.title);
     if (options.description !== undefined) this.setDescription(options.description);
@@ -470,18 +469,15 @@ export class SonnerToast extends HTMLElementCtor implements SonnerToastElement {
   }
 
   #applyCloseButton() {
-    const show = this.hasAttribute('close-button') && this.getAttribute('close-button') !== 'false';
-    this.#closeBtn.hidden = !show;
+    this.#closeBtn.hidden = !boolAttr(this, 'close-button');
   }
 
   #applyRichColors() {
-    const rich = this.hasAttribute('rich-colors') && this.getAttribute('rich-colors') !== 'false';
-    this.setAttribute('data-rich-colors', String(rich));
+    this.setAttribute('data-rich-colors', String(boolAttr(this, 'rich-colors')));
   }
 
   #applyInvert() {
-    const invert = this.hasAttribute('invert') && this.getAttribute('invert') !== 'false';
-    this.setAttribute('data-invert', String(invert));
+    this.setAttribute('data-invert', String(boolAttr(this, 'invert')));
   }
 
   #readDuration(): number | null {
