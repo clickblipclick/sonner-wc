@@ -1,6 +1,6 @@
 {
   "name": "sonner-wc",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Sonner's toast UX as a framework-agnostic Web Component. Drop in anywhere.",
   "type": "module",
   "main": "./dist/sonner-wc.js",
