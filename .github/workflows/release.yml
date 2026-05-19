@@ -26,10 +26,11 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       # Node 22 ships with npm 10, but trusted-publisher OIDC needs 11.5+.
-      # Without it, --provenance still writes a sigstore attestation but the
-      # registry PUT 404s because npm CLI can't perform the trusted-publisher
-      # exchange.
-      - run: npm install -g npm@latest
+      # The bundled npm in the Node 22 toolcache image is also missing some
+      # of its own deps, so `npm i -g npm@latest` fails. Use corepack to
+      # install a clean npm independently of the bundled one.
+      - run: corepack enable npm
+      - run: corepack prepare npm@latest --activate
       - run: npm --version
 
       - run: bun install --frozen-lockfile
