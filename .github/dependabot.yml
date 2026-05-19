@@ -7,9 +7,13 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    # Majors stay maintainer-initiated — they tend to need migration work and
+    # often arrive with Bun-lockfile mismatches that Dependabot can't repair.
+    ignore:
+      - dependency-name: '*'
+        update-types: [version-update:semver-major]
     groups:
-      # Bundle minor + patch updates into one PR per week. Major bumps still
-      # arrive as individual PRs so they get the attention they deserve.
+      # Bundle minor + patch updates into one PR per week.
       minor-and-patch:
         update-types:
           - minor
@@ -21,6 +25,9 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: '*'
+        update-types: [version-update:semver-major]
     groups:
       minor-and-patch:
         update-types:
@@ -33,6 +40,9 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: '*'
+        update-types: [version-update:semver-major]
     groups:
       minor-and-patch:
         update-types:
