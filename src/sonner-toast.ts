@@ -24,11 +24,36 @@ function isUrgentType(type: ToastType): boolean {
   return type === 'error' || type === 'warning';
 }
 
-function setContent(host: HTMLElement, slotName: string, value: ToastContent | undefined): void {
-  // Remove prior light DOM child(ren) with this slot name.
+/** Read an HTML attribute as boolean: present and not literally `"false"`. */
+function boolAttr(host: HTMLElement, name: string): boolean {
+  return host.hasAttribute(name) && host.getAttribute(name) !== 'false';
+}
+
+/** Set `name` to `""` when `on` is true; remove it otherwise. */
+function toggleAttr(host: HTMLElement, name: string, on: boolean): void {
+  if (on) host.setAttribute(name, '');
+  else host.removeAttribute(name);
+}
+
+/** Remove any light-DOM children currently assigned to `slotName`. */
+function clearSlot(host: HTMLElement, slotName: string): void {
   for (const child of Array.from(host.children)) {
     if (child.getAttribute('slot') === slotName) host.removeChild(child);
   }
+}
+
+/** Parse an HTML string and tag its first element with `slot=slotName`. Returns
+ *  `null` if the string didn't produce an element. */
+function slotElementFromHTML(html: string, slotName: string): Element | null {
+  const tpl = document.createElement('template');
+  tpl.innerHTML = html;
+  const el = tpl.content.firstElementChild;
+  if (el) el.setAttribute('slot', slotName);
+  return el;
+}
+
+function setContent(host: HTMLElement, slotName: string, value: ToastContent | undefined): void {
+  clearSlot(host, slotName);
   if (value == null || value === '') return;
   const resolved = typeof value === 'function' ? value() : value;
   if (resolved instanceof Node) {
@@ -48,9 +73,7 @@ function setButtonSlot(
   value: ToastAction | HTMLElement | undefined,
   defaultCloseHandler: () => void,
 ): void {
-  for (const child of Array.from(host.children)) {
-    if (child.getAttribute('slot') === slotName) host.removeChild(child);
-  }
+  clearSlot(host, slotName);
   if (!value) return;
   if (value instanceof HTMLElement) {
     value.setAttribute('slot', slotName);
@@ -297,23 +320,11 @@ export class SonnerToast extends HTMLElementCtor implements SonnerToastElement {
       this.#remainingTime = 0;
       timerNeedsReset = true;
     }
-    if (options.dismissible !== undefined) {
-      if (options.dismissible) this.setAttribute('dismissible', '');
-      else this.removeAttribute('dismissible');
-    }
+    if (options.dismissible !== undefined) toggleAttr(this, 'dismissible', options.dismissible);
     if (options.position !== undefined) this.setAttribute('position', options.position);
-    if (options.closeButton !== undefined) {
-      if (options.closeButton) this.setAttribute('close-button', '');
-      else this.removeAttribute('close-button');
-    }
-    if (options.richColors !== undefined) {
-      if (options.richColors) this.setAttribute('rich-colors', '');
-      else this.removeAttribute('rich-colors');
-    }
-    if (options.invert !== undefined) {
-      if (options.invert) this.setAttribute('invert', '');
-      else this.removeAttribute('invert');
-    }
+    if (options.closeButton !== undefined) toggleAttr(this, 'close-button', options.closeButton);
+    if (options.richColors !== undefined) toggleAttr(this, 'rich-colors', options.richColors);
+    if (options.invert !== undefined) toggleAttr(this, 'invert', options.invert);
     if (options.icon !== undefined) this.setIcon(options.icon);
     if (options.title !== undefined) this.setTitle(options.title);
     if (options.description !== undefined) this.setDescription(options.description);
@@ -337,8 +348,7 @@ export class SonnerToast extends HTMLElementCtor implements SonnerToastElement {
     // toast's own aria-live attribute is unreliable across screen readers;
     // the alert region is fresh and consistent.
     if (this.#mounted && typeChanged && !wasUrgent && isUrgentType(this.toastType)) {
-      const titleEl = Array.from(this.children).find((c) => c.getAttribute('slot') === 'title');
-      const text = titleEl?.textContent?.trim();
+      const text = this.#getTitleText();
       if (text) {
         const toaster = this.closest('sonner-toaster') as SonnerToasterElement | null;
         toaster?.announceUrgent(text);
@@ -352,6 +362,12 @@ export class SonnerToast extends HTMLElementCtor implements SonnerToastElement {
     this.#applyCloseButtonAriaLabel();
   }
 
+  /** Trimmed text content of the slotted title child, or '' if none. */
+  #getTitleText(): string {
+    const titleEl = Array.from(this.children).find((c) => c.getAttribute('slot') === 'title');
+    return titleEl?.textContent?.trim() ?? '';
+  }
+
   /** Apply the close button's aria-label: explicit override wins, otherwise
    *  `Close: <title>` for disambiguation, falling back to `Close toast`. */
   #applyCloseButtonAriaLabel(): void {
@@ -359,8 +375,7 @@ export class SonnerToast extends HTMLElementCtor implements SonnerToastElement {
       this.#closeBtn.setAttribute('aria-label', this.#closeButtonAriaLabel);
       return;
     }
-    const titleEl = Array.from(this.children).find((c) => c.getAttribute('slot') === 'title');
-    const text = titleEl?.textContent?.trim();
+    const text = this.#getTitleText();
     this.#closeBtn.setAttribute('aria-label', text ? `Close: ${text}` : 'Close toast');
   }
 
@@ -369,9 +384,7 @@ export class SonnerToast extends HTMLElementCtor implements SonnerToastElement {
   }
 
   setIcon(value: Node | string | null | undefined): void {
-    for (const child of Array.from(this.children)) {
-      if (child.getAttribute('slot') === 'icon') this.removeChild(child);
-    }
+    clearSlot(this, 'icon');
     if (value == null) return;
     if (value instanceof Node) {
       if (value instanceof Element) value.setAttribute('slot', 'icon');
@@ -380,13 +393,8 @@ export class SonnerToast extends HTMLElementCtor implements SonnerToastElement {
       // Parse the HTML string and slot its first element directly — wrapping in a
       // <span> adds inline-baseline vertical wobble that breaks the icon's vertical
       // centering against the title.
-      const tpl = document.createElement('template');
-      tpl.innerHTML = value;
-      const el = tpl.content.firstElementChild;
-      if (el) {
-        el.setAttribute('slot', 'icon');
-        this.appendChild(el);
-      }
+      const el = slotElementFromHTML(value, 'icon');
+      if (el) this.appendChild(el);
     }
   }
 
@@ -418,41 +426,32 @@ export class SonnerToast extends HTMLElementCtor implements SonnerToastElement {
     const urgent = isUrgentType(type);
     this.setAttribute('role', urgent ? 'alert' : 'status');
     this.setAttribute('aria-live', urgent ? 'assertive' : 'polite');
+
+    // Always clear any prior default icon — we'll re-install one below if needed.
+    // (The spinner for `loading` lives in the shadow DOM; see SHADOW_TEMPLATE.)
+    for (const c of Array.from(this.children)) {
+      if (c.getAttribute('slot') === 'icon' && c.hasAttribute('data-sonner-default-icon'))
+        this.removeChild(c);
+    }
+
     if (type === 'loading') {
       this.setAttribute('data-promise', 'true');
-      // The spinner lives in the shadow DOM (see SHADOW_TEMPLATE). CSS reveals it when
-      // data-type='loading' and no user icon is slotted. Nothing to do here.
-      // Clear any prior default icon left from a previous non-loading type.
-      for (const c of Array.from(this.children)) {
-        if (c.getAttribute('slot') === 'icon' && c.hasAttribute('data-sonner-default-icon'))
-          this.removeChild(c);
-      }
-    } else {
-      this.removeAttribute('data-promise');
-      const hasUserIcon = Array.from(this.children).some((c) => {
-        if (c.getAttribute('slot') !== 'icon') return false;
-        // a previously-set default type icon is marked with data-sonner-default-icon
-        return !c.hasAttribute('data-sonner-default-icon');
-      });
-      if (!hasUserIcon) {
-        // Remove prior default icon
-        for (const c of Array.from(this.children)) {
-          if (c.getAttribute('slot') === 'icon' && c.hasAttribute('data-sonner-default-icon'))
-            this.removeChild(c);
-        }
-        const builtin = getTypeIcon(type);
-        if (builtin) {
-          // Parse and slot the actual SVG/spinner element directly (no span wrapper).
-          const tpl = document.createElement('template');
-          tpl.innerHTML = builtin;
-          const el = tpl.content.firstElementChild;
-          if (el) {
-            el.setAttribute('slot', 'icon');
-            el.setAttribute('data-sonner-default-icon', '');
-            this.appendChild(el);
-          }
-        }
-      }
+      return;
+    }
+    this.removeAttribute('data-promise');
+
+    const hasUserIcon = Array.from(this.children).some(
+      (c) => c.getAttribute('slot') === 'icon', // any remaining slot=icon child is user-provided
+    );
+    if (hasUserIcon) return;
+
+    const builtin = getTypeIcon(type);
+    if (!builtin) return;
+    // Parse and slot the actual SVG/spinner element directly (no span wrapper).
+    const el = slotElementFromHTML(builtin, 'icon');
+    if (el) {
+      el.setAttribute('data-sonner-default-icon', '');
+      this.appendChild(el);
     }
   }
 
@@ -470,18 +469,15 @@ export class SonnerToast extends HTMLElementCtor implements SonnerToastElement {
   }
 
   #applyCloseButton() {
-    const show = this.hasAttribute('close-button') && this.getAttribute('close-button') !== 'false';
-    this.#closeBtn.hidden = !show;
+    this.#closeBtn.hidden = !boolAttr(this, 'close-button');
   }
 
   #applyRichColors() {
-    const rich = this.hasAttribute('rich-colors') && this.getAttribute('rich-colors') !== 'false';
-    this.setAttribute('data-rich-colors', String(rich));
+    this.setAttribute('data-rich-colors', String(boolAttr(this, 'rich-colors')));
   }
 
   #applyInvert() {
-    const invert = this.hasAttribute('invert') && this.getAttribute('invert') !== 'false';
-    this.setAttribute('data-invert', String(invert));
+    this.setAttribute('data-invert', String(boolAttr(this, 'invert')));
   }
 
   #readDuration(): number | null {
