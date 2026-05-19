@@ -1,6 +1,4 @@
 export const VISIBLE_TOASTS_AMOUNT = 3;
-export const VIEWPORT_OFFSET = '24px';
-export const MOBILE_VIEWPORT_OFFSET = '16px';
 export const TOAST_LIFETIME = 4000;
 export const TOAST_WIDTH = 356;
 export const GAP = 14;

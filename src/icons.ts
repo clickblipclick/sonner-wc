@@ -15,15 +15,6 @@ export const ERROR_ICON =
 export const CLOSE_ICON =
   '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
 
-const SPINNER_BARS = Array.from(
-  { length: 12 },
-  () => '<div class="sonner-loading-bar"></div>',
-).join('');
-export const LOADING_SPINNER =
-  '<div class="sonner-loading-wrapper" data-visible="true"><div class="sonner-spinner">' +
-  SPINNER_BARS +
-  '</div></div>';
-
 export function getTypeIcon(type: ToastType): string | null {
   switch (type) {
     case 'success':
