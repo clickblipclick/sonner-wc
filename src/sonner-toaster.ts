@@ -126,6 +126,11 @@ export class SonnerToaster extends HTMLElementCtor implements SonnerToasterEleme
   }
 
   connectedCallback() {
+    if (typeof this.showPopover === 'function') {
+      if (!this.hasAttribute('popover')) this.setAttribute('popover', 'manual');
+      this.showPopover();
+    }
+
     if (!this.hasAttribute('tabindex')) this.tabIndex = -1;
     if (!this.hasAttribute('role')) this.setAttribute('role', 'region');
     if (!this.hasAttribute('aria-label'))
@@ -154,6 +159,9 @@ export class SonnerToaster extends HTMLElementCtor implements SonnerToasterEleme
   }
 
   disconnectedCallback() {
+    if (typeof this.hidePopover === 'function') {
+      try { this.hidePopover(); } catch { /* already hidden or disconnected */ }
+    }
     this.#childObserver.disconnect();
     this.#resizeObserver.disconnect();
     document.removeEventListener('keydown', this.#onKeyDown);
