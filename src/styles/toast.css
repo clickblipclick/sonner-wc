@@ -5,6 +5,8 @@
   position: absolute;
   opacity: 0;
   transform: var(--y);
+  contain: content;
+  will-change: transform, opacity;
   touch-action: none;
   transition:
     transform 400ms,

@@ -52,6 +52,7 @@
   padding: 0;
   margin: 0;
   outline: none;
+  contain: layout style;
   z-index: 999999999;
   transition: transform 400ms ease;
   display: block;
