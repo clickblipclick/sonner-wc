@@ -38,6 +38,7 @@
       </a>
     </div>
     <nav class="flex items-center gap-1">
+      <a href="{base}/playground" class="btn btn-ghost btn-sm">Playground</a>
       <a
         href="https://www.npmjs.com/package/sonner-wc"
         target="_blank"
