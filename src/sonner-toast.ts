@@ -69,29 +69,42 @@ function setContent(host: HTMLElement, slotName: string, value: ToastContent | u
 
 function setButtonSlot(
   host: HTMLElement,
+  shadow: ShadowRoot,
   slotName: 'action' | 'cancel',
   value: ToastAction | HTMLElement | undefined,
   defaultCloseHandler: () => void,
 ): void {
+  // Clear any user-supplied slotted element from light DOM.
   clearSlot(host, slotName);
+  // Clear any prior library-rendered button from inside the shadow host container.
+  const container = shadow.querySelector(`[data-${slotName}-host]`) as HTMLElement | null;
+  if (container) {
+    for (const child of Array.from(container.children)) {
+      if (child.tagName === 'BUTTON') container.removeChild(child);
+    }
+  }
   if (!value) return;
   if (value instanceof HTMLElement) {
+    // User-supplied element — slot it; the consumer owns its styling.
     value.setAttribute('slot', slotName);
     host.appendChild(value);
     return;
   }
+  // `{ label, onClick }` form: render the button inside the shadow root so
+  // page-level CSS (e.g. Tailwind preflight on `button`) can't override our
+  // defaults — outer-tree rules outrank `::slotted()` regardless of specificity.
+  if (!container) return;
   const btn = document.createElement('button');
-  btn.setAttribute('slot', slotName);
   btn.setAttribute('type', 'button');
-  if (slotName === 'cancel') btn.setAttribute('data-cancel', '');
-  else btn.setAttribute('data-action', '');
+  btn.setAttribute('data-button', '');
+  btn.setAttribute(slotName === 'cancel' ? 'data-cancel' : 'data-action', '');
   btn.textContent = value.label;
   btn.addEventListener('click', (e) => {
-    value.onClick?.(e as MouseEvent);
-    if ((e as MouseEvent).defaultPrevented && slotName === 'action') return;
+    value.onClick?.(e);
+    if (e.defaultPrevented && slotName === 'action') return;
     defaultCloseHandler();
   });
-  host.appendChild(btn);
+  container.appendChild(btn);
 }
 
 const SPINNER_BARS_HTML = Array.from(
@@ -120,8 +133,8 @@ const SHADOW_TEMPLATE: HTMLTemplateElement | null = (() => {
         <div data-title part="title"><slot name="title"></slot></div>
         <div data-description part="description"><slot name="description"></slot></div>
       </div>
-      <slot name="cancel"></slot>
-      <slot name="action"></slot>
+      <div data-cancel-host part="cancel"><slot name="cancel"></slot></div>
+      <div data-action-host part="action"><slot name="action"></slot></div>
       <slot part="custom"></slot>
     </div>
   `;
@@ -337,10 +350,10 @@ export class SonnerToast extends HTMLElementCtor implements SonnerToastElement {
     if (options.title !== undefined) this.setTitle(options.title);
     if (options.description !== undefined) this.setDescription(options.description);
     if (options.action !== undefined) {
-      setButtonSlot(this, 'action', options.action, () => this.dismiss());
+      setButtonSlot(this, this.#shadow, 'action', options.action, () => this.dismiss());
     }
     if (options.cancel !== undefined) {
-      setButtonSlot(this, 'cancel', options.cancel, () => this.dismiss());
+      setButtonSlot(this, this.#shadow, 'cancel', options.cancel, () => this.dismiss());
     }
     if (options.className) this.className = options.className;
     if (options.testId !== undefined) this.setAttribute('data-testid', options.testId);
