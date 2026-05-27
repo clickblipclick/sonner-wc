@@ -5,7 +5,7 @@
   position: absolute;
   opacity: 0;
   transform: var(--y);
-  contain: content;
+  contain: layout style;
   will-change: transform, opacity;
   touch-action: none;
   transition:
