@@ -77,9 +77,7 @@ describe('toast() helper', () => {
   test('action button triggers onClick and dismisses by default', async () => {
     let clicked = false;
     const el = toast('Hi', { action: { label: 'OK', onClick: () => (clicked = true) } });
-    const btn = Array.from(el.children).find(
-      (c) => c.getAttribute('slot') === 'action',
-    ) as HTMLButtonElement;
+    const btn = el.shadowRoot?.querySelector('[data-action]') as HTMLButtonElement;
     expect(btn).toBeDefined();
     btn.click();
     expect(clicked).toBe(true);

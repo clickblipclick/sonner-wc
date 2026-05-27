@@ -161,9 +161,7 @@
   animation: sonner-fade-in 300ms ease forwards;
 }
 
-[data-button],
-::slotted(button[slot='action']),
-::slotted(button[slot='cancel']) {
+[data-button] {
   border-radius: 4px;
   padding-left: 8px;
   padding-right: 8px;
@@ -188,8 +186,7 @@
 [data-button]:focus-visible {
   box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.4);
 }
-[data-cancel],
-::slotted(button[slot='cancel']) {
+[data-cancel] {
   color: var(--normal-text);
   background: var(--cancel-bg, rgba(0, 0, 0, 0.08));
 }
