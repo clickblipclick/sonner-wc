@@ -49,7 +49,7 @@
     containerAriaLabel = 'Notifications';
   }
 
-  const snippet = $derived.by(() => {
+  const markupSnippet = $derived.by(() => {
     const attrs: string[] = [];
     if (position !== 'bottom-right') attrs.push(`position="${position}"`);
     if (theme !== 'light') attrs.push(`theme="${theme}"`);
@@ -71,22 +71,9 @@
       : `<sonner-toaster></sonner-toaster>`;
   });
 
-  let snippetHtml = $state('');
-  $effect(() => {
-    const s = snippet;
-    void highlight(s, 'html').then((h) => (snippetHtml = h));
-  });
-
-  onMount(async () => {
-    const mod = await import('$lib/sonner-wc');
-    toast = mod.toast;
-  });
-
   // --- Toast (per-invocation) options ---
   type ToastType = 'default' | 'success' | 'error' | 'info' | 'warning' | 'loading';
   type Tri = 'inherit' | 'on' | 'off';
-
-  const ALT_TOASTER_ID = 'playground-alt';
 
   let toastType: ToastType = $state('default');
   let toastTitle = $state('Event has been created');
@@ -94,7 +81,6 @@
   let overrideDuration = $state(false);
   let toastDuration = $state(4000);
   let toastDismissible = $state(true);
-  let toasterId = $state('');
   let toastCloseButton: Tri = $state('inherit');
   let toastRichColors: Tri = $state('inherit');
   let actionLabel = $state('');
@@ -107,7 +93,6 @@
     overrideDuration = false;
     toastDuration = 4000;
     toastDismissible = true;
-    toasterId = '';
     toastCloseButton = 'inherit';
     toastRichColors = 'inherit';
     actionLabel = '';
@@ -120,7 +105,6 @@
     if (toastDescription) opts.description = toastDescription;
     if (overrideDuration) opts.duration = toastDuration;
     if (!toastDismissible) opts.dismissible = false;
-    if (toasterId) opts.toasterId = toasterId;
     if (toastCloseButton !== 'inherit') opts.closeButton = toastCloseButton === 'on';
     if (toastRichColors !== 'inherit') opts.richColors = toastRichColors === 'on';
     if (actionLabel)
@@ -129,6 +113,41 @@
     const fn = toastType === 'default' ? toast : toast[toastType];
     fn(toastTitle, opts);
   }
+
+  // Build the `toast()` call that reproduces the current options — the thing
+  // a user actually copies into their app. Mirrors fireToast() exactly.
+  const js = (s: string) => `'${s.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
+  const callSnippet = $derived.by(() => {
+    const opts: string[] = [];
+    if (toastDescription) opts.push(`description: ${js(toastDescription)}`);
+    if (overrideDuration) opts.push(`duration: ${toastDuration}`);
+    if (!toastDismissible) opts.push('dismissible: false');
+    if (toastCloseButton !== 'inherit') opts.push(`closeButton: ${toastCloseButton === 'on'}`);
+    if (toastRichColors !== 'inherit') opts.push(`richColors: ${toastRichColors === 'on'}`);
+    if (actionLabel) opts.push(`action: { label: ${js(actionLabel)}, onClick: () => {} }`);
+    if (cancelLabel) opts.push(`cancel: { label: ${js(cancelLabel)}, onClick: () => {} }`);
+    const fn = toastType === 'default' ? 'toast' : `toast.${toastType}`;
+    const title = js(toastTitle);
+    return opts.length
+      ? `${fn}(${title}, {\n  ${opts.join(',\n  ')},\n})`
+      : `${fn}(${title})`;
+  });
+
+  let markupHtml = $state('');
+  let callHtml = $state('');
+  $effect(() => {
+    const s = markupSnippet;
+    void highlight(s, 'html').then((h) => (markupHtml = h));
+  });
+  $effect(() => {
+    const s = callSnippet;
+    void highlight(s, 'ts').then((h) => (callHtml = h));
+  });
+
+  onMount(async () => {
+    const mod = await import('$lib/sonner-wc');
+    toast = mod.toast;
+  });
 
   let promiseSeq = 0;
   function firePromise(ok: boolean) {
@@ -154,155 +173,159 @@
       return el;
     });
   }
-
 </script>
 
 <svelte:head><title>Playground · sonner-wc</title></svelte:head>
 
+<!-- Readable label + the real API name (kebab attr or camelCase option key). -->
+{#snippet lbl(text: string, api?: string, unit?: string)}
+  <span class="text-sm font-medium">
+    {text}{#if api}{' '}<span class="font-normal text-base-content/45">(<code class="text-xs">{api}</code>{#if unit}&nbsp;· {unit}{/if})</span>{/if}
+  </span>
+{/snippet}
+
 <section class="mx-auto max-w-6xl px-4 py-8">
-  <header class="mb-6">
+  <header class="reveal mb-8">
     <h1 class="text-3xl font-semibold tracking-tight">Playground</h1>
-    <p class="mt-2 text-base-content/70">
-      Tweak every <code>&lt;sonner-toaster&gt;</code> attribute and fire toasts to see how
-      they behave together. The snippet below reflects your current settings.
+    <p class="mt-2 max-w-2xl text-base-content/70">
+      Tweak every <code>&lt;sonner-toaster&gt;</code> attribute and toast option, fire it, and
+      copy the exact markup and call. The output rail follows you as you scroll.
     </p>
   </header>
 
-  <div class="grid gap-6 lg:grid-cols-[20rem_minmax(0,1fr)]">
-    <!-- Controls -->
-    <aside class="rounded-box border border-base-300 p-4">
-      <div class="flex items-center justify-between">
-        <h2 class="font-semibold">Toaster</h2>
-        <button class="btn btn-ghost btn-xs" onclick={reset}>Reset</button>
-      </div>
+  <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_23rem] lg:items-start">
+    <!-- Configuration column -->
+    <div class="grid gap-6">
+      <!-- Toaster attributes -->
+      <section class="reveal rounded-box border border-base-300 p-5" style="--d:60ms">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="font-semibold">Toaster</h2>
+            <p class="text-sm text-base-content/55">Element attributes — apply to every toast.</p>
+          </div>
+          <button class="btn btn-ghost btn-xs" onclick={reset}>Reset</button>
+        </div>
 
-      <div class="mt-3 grid gap-3">
-        <label class="form-control">
-          <span class="label-text mb-1">position</span>
-          <select class="select select-sm select-bordered" bind:value={position}>
-            {#each POSITIONS as p}
-              <option value={p}>{p}</option>
-            {/each}
-          </select>
-        </label>
-
-        <label class="form-control">
-          <span class="label-text mb-1">theme</span>
-          <select class="select select-sm select-bordered" bind:value={theme}>
-            <option value="light">light</option>
-            <option value="dark">dark</option>
-            <option value="system">system</option>
-          </select>
-        </label>
-
-        <label class="form-control">
-          <span class="label-text mb-1">visible-toasts</span>
-          <input
-            type="number"
-            class="input input-sm input-bordered"
-            min="1"
-            max="9"
-            bind:value={visibleToasts}
-          />
-        </label>
-
-        <label class="form-control">
-          <span class="label-text mb-1">duration (ms)</span>
-          <input
-            type="number"
-            class="input input-sm input-bordered"
-            min="0"
-            step="500"
-            bind:value={duration}
-          />
-        </label>
-
-        <label class="label cursor-pointer justify-start gap-3">
-          <input type="checkbox" class="checkbox checkbox-sm" bind:checked={richColors} />
-          <span class="label-text">rich-colors</span>
-        </label>
-
-        <label class="label cursor-pointer justify-start gap-3">
-          <input type="checkbox" class="checkbox checkbox-sm" bind:checked={closeButton} />
-          <span class="label-text">close-button</span>
-        </label>
-
-        <label class="label cursor-pointer justify-start gap-3">
-          <input type="checkbox" class="checkbox checkbox-sm" bind:checked={expand} />
-          <span class="label-text">expand</span>
-        </label>
-      </div>
-
-      <details class="collapse collapse-arrow mt-4 border border-base-300">
-        <summary class="collapse-title text-sm font-medium">Advanced</summary>
-        <div class="collapse-content grid gap-3">
-          <label class="label cursor-pointer justify-start gap-3">
-            <input type="checkbox" class="checkbox checkbox-sm" bind:checked={invert} />
-            <span class="label-text">invert</span>
-          </label>
-
-          <label class="form-control">
-            <span class="label-text mb-1">dir</span>
-            <select class="select select-sm select-bordered" bind:value={dir}>
-              <option value="auto">auto</option>
-              <option value="ltr">ltr</option>
-              <option value="rtl">rtl</option>
+        <div class="mt-4 grid gap-4 sm:grid-cols-2">
+          <label class="flex flex-col gap-1.5">
+            {@render lbl('Position', 'position')}
+            <select class="select select-sm select-bordered w-full" bind:value={position}>
+              {#each POSITIONS as p}
+                <option value={p}>{p}</option>
+              {/each}
             </select>
           </label>
 
-          <label class="form-control">
-            <span class="label-text mb-1">gap (px)</span>
+          <label class="flex flex-col gap-1.5">
+            {@render lbl('Theme', 'theme')}
+            <select class="select select-sm select-bordered w-full" bind:value={theme}>
+              <option value="light">light</option>
+              <option value="dark">dark</option>
+              <option value="system">system</option>
+            </select>
+          </label>
+
+          <label class="flex flex-col gap-1.5">
+            {@render lbl('Visible toasts', 'visible-toasts')}
             <input
               type="number"
-              class="input input-sm input-bordered"
+              class="input input-sm input-bordered w-full"
+              min="1"
+              max="9"
+              bind:value={visibleToasts}
+            />
+          </label>
+
+          <label class="flex flex-col gap-1.5">
+            {@render lbl('Duration', 'duration', 'ms')}
+            <input
+              type="number"
+              class="input input-sm input-bordered w-full"
               min="0"
-              bind:value={gap}
-            />
-          </label>
-
-          <label class="form-control">
-            <span class="label-text mb-1">offset</span>
-            <input type="text" class="input input-sm input-bordered" bind:value={offset} />
-          </label>
-
-          <label class="form-control">
-            <span class="label-text mb-1">mobile-offset</span>
-            <input
-              type="text"
-              class="input input-sm input-bordered"
-              bind:value={mobileOffset}
-            />
-          </label>
-
-          <label class="form-control">
-            <span class="label-text mb-1">hotkey</span>
-            <input type="text" class="input input-sm input-bordered" bind:value={hotkey} />
-          </label>
-
-          <label class="form-control">
-            <span class="label-text mb-1">container-aria-label</span>
-            <input
-              type="text"
-              class="input input-sm input-bordered"
-              bind:value={containerAriaLabel}
+              step="500"
+              bind:value={duration}
             />
           </label>
         </div>
-      </details>
-    </aside>
 
-    <!-- Toast options + triggers -->
-    <div>
-      <div class="rounded-box border border-base-300 p-4">
+        <div class="mt-4 flex flex-wrap gap-x-6 gap-y-2">
+          <label class="label cursor-pointer justify-start gap-2">
+            <input type="checkbox" class="checkbox checkbox-sm" bind:checked={richColors} />
+            {@render lbl('Rich colors', 'rich-colors')}
+          </label>
+          <label class="label cursor-pointer justify-start gap-2">
+            <input type="checkbox" class="checkbox checkbox-sm" bind:checked={closeButton} />
+            {@render lbl('Close button', 'close-button')}
+          </label>
+          <label class="label cursor-pointer justify-start gap-2">
+            <input type="checkbox" class="checkbox checkbox-sm" bind:checked={expand} />
+            {@render lbl('Expand', 'expand')}
+          </label>
+        </div>
+
+        <details class="collapse collapse-arrow mt-4 border border-base-300">
+          <summary class="collapse-title text-sm font-medium">Advanced attributes</summary>
+          <div class="collapse-content grid gap-4 sm:grid-cols-2">
+            <label class="label cursor-pointer justify-start gap-2 sm:col-span-2">
+              <input type="checkbox" class="checkbox checkbox-sm" bind:checked={invert} />
+              {@render lbl('Invert', 'invert')}
+            </label>
+
+            <label class="flex flex-col gap-1.5">
+              {@render lbl('Direction', 'dir')}
+              <select class="select select-sm select-bordered w-full" bind:value={dir}>
+                <option value="auto">auto</option>
+                <option value="ltr">ltr</option>
+                <option value="rtl">rtl</option>
+              </select>
+            </label>
+
+            <label class="flex flex-col gap-1.5">
+              {@render lbl('Gap', 'gap', 'px')}
+              <input type="number" class="input input-sm input-bordered w-full" min="0" bind:value={gap} />
+            </label>
+
+            <label class="flex flex-col gap-1.5">
+              {@render lbl('Offset', 'offset')}
+              <input type="text" class="input input-sm input-bordered w-full" bind:value={offset} />
+            </label>
+
+            <label class="flex flex-col gap-1.5">
+              {@render lbl('Mobile offset', 'mobile-offset')}
+              <input type="text" class="input input-sm input-bordered w-full" bind:value={mobileOffset} />
+            </label>
+
+            <label class="flex flex-col gap-1.5">
+              {@render lbl('Hotkey', 'hotkey')}
+              <input type="text" class="input input-sm input-bordered w-full" bind:value={hotkey} />
+            </label>
+
+            <label class="flex flex-col gap-1.5">
+              {@render lbl('Container label', 'container-aria-label')}
+              <input
+                type="text"
+                class="input input-sm input-bordered w-full"
+                bind:value={containerAriaLabel}
+              />
+            </label>
+          </div>
+        </details>
+      </section>
+
+      <!-- Toast options -->
+      <section class="reveal rounded-box border border-base-300 p-5" style="--d:120ms">
         <div class="flex items-center justify-between">
-          <h2 class="font-semibold">Toast</h2>
+          <div>
+            <h2 class="font-semibold">Toast</h2>
+            <p class="text-sm text-base-content/55">Options for a single <code>toast()</code> call.</p>
+          </div>
           <button class="btn btn-ghost btn-xs" onclick={resetToast}>Reset</button>
         </div>
 
-        <div class="mt-3 grid gap-3 sm:grid-cols-2">
-          <label class="form-control">
-            <span class="label-text mb-1">type</span>
-            <select class="select select-sm select-bordered" bind:value={toastType}>
+        <div class="mt-4 grid gap-4 sm:grid-cols-2">
+          <label class="flex flex-col gap-1.5">
+            {@render lbl('Type')}
+            <select class="select select-sm select-bordered w-full" bind:value={toastType}>
               <option value="default">default</option>
               <option value="success">success</option>
               <option value="error">error</option>
@@ -312,144 +335,121 @@
             </select>
           </label>
 
-          <label class="form-control">
-            <span class="label-text mb-1">
-              toasterId
-              <button
-                type="button"
-                class="link link-primary text-xs ml-1"
-                onclick={() => (toasterId = ALT_TOASTER_ID)}
-              >
-                try "{ALT_TOASTER_ID}"
-              </button>
-            </span>
-            <input
-              type="text"
-              class="input input-sm input-bordered"
-              bind:value={toasterId}
-              placeholder="(empty = default toaster)"
-            />
+          <label class="flex flex-col gap-1.5">
+            {@render lbl('Title')}
+            <input type="text" class="input input-sm input-bordered w-full" bind:value={toastTitle} />
           </label>
 
-          <label class="form-control sm:col-span-2">
-            <span class="label-text mb-1">title</span>
+          <label class="flex flex-col gap-1.5 sm:col-span-2">
+            {@render lbl('Description', 'description')}
             <input
               type="text"
-              class="input input-sm input-bordered"
-              bind:value={toastTitle}
-            />
-          </label>
-
-          <label class="form-control sm:col-span-2">
-            <span class="label-text mb-1">description</span>
-            <input
-              type="text"
-              class="input input-sm input-bordered"
+              class="input input-sm input-bordered w-full"
               bind:value={toastDescription}
               placeholder="(empty = none)"
             />
           </label>
 
-          <label class="form-control">
-            <span class="label-text mb-1">action label</span>
+          <label class="flex flex-col gap-1.5">
+            {@render lbl('Action', 'action.label')}
             <input
               type="text"
-              class="input input-sm input-bordered"
+              class="input input-sm input-bordered w-full"
               bind:value={actionLabel}
               placeholder="(empty = none)"
             />
           </label>
 
-          <label class="form-control">
-            <span class="label-text mb-1">cancel label</span>
+          <label class="flex flex-col gap-1.5">
+            {@render lbl('Cancel', 'cancel.label')}
             <input
               type="text"
-              class="input input-sm input-bordered"
+              class="input input-sm input-bordered w-full"
               bind:value={cancelLabel}
               placeholder="(empty = none)"
             />
           </label>
-
-          <label class="form-control">
-            <span class="label-text mb-1">close-button (override)</span>
-            <select class="select select-sm select-bordered" bind:value={toastCloseButton}>
-              <option value="inherit">inherit</option>
-              <option value="on">on</option>
-              <option value="off">off</option>
-            </select>
-          </label>
-
-          <label class="form-control">
-            <span class="label-text mb-1">rich-colors (override)</span>
-            <select class="select select-sm select-bordered" bind:value={toastRichColors}>
-              <option value="inherit">inherit</option>
-              <option value="on">on</option>
-              <option value="off">off</option>
-            </select>
-          </label>
-
-          <div class="form-control">
-            <label class="label cursor-pointer justify-start gap-3">
-              <input
-                type="checkbox"
-                class="checkbox checkbox-sm"
-                bind:checked={overrideDuration}
-              />
-              <span class="label-text">override duration</span>
-            </label>
-            <input
-              type="number"
-              class="input input-sm input-bordered mt-1"
-              min="0"
-              step="500"
-              disabled={!overrideDuration}
-              bind:value={toastDuration}
-            />
-          </div>
-
-          <label class="label cursor-pointer justify-start gap-3 self-end">
-            <input
-              type="checkbox"
-              class="checkbox checkbox-sm"
-              bind:checked={toastDismissible}
-            />
-            <span class="label-text">dismissible</span>
-          </label>
         </div>
 
-        <button class="btn btn-primary btn-sm mt-4" onclick={fireToast}>Fire toast</button>
-      </div>
+        <!-- Per-toast overrides of toaster defaults -->
+        <div class="mt-5 border-t border-base-300 pt-4">
+          <h3 class="text-sm font-semibold text-base-content/70">Overrides</h3>
+          <div class="mt-3 grid items-end gap-4 sm:grid-cols-2">
+            <label class="flex flex-col gap-1.5">
+              {@render lbl('Close button', 'closeButton')}
+              <select class="select select-sm select-bordered w-full" bind:value={toastCloseButton}>
+                <option value="inherit">inherit</option>
+                <option value="on">on</option>
+                <option value="off">off</option>
+              </select>
+            </label>
 
-      <div class="rounded-box mt-6 border border-base-300 p-4">
-        <h2 class="font-semibold">Special triggers</h2>
-        <p class="text-sm text-base-content/60 mt-1">
-          Variants the option form can't express.
-        </p>
-        <div class="mt-3 flex flex-wrap gap-2">
+            <label class="flex flex-col gap-1.5">
+              {@render lbl('Rich colors', 'richColors')}
+              <select class="select select-sm select-bordered w-full" bind:value={toastRichColors}>
+                <option value="inherit">inherit</option>
+                <option value="on">on</option>
+                <option value="off">off</option>
+              </select>
+            </label>
+
+            <div class="flex flex-col gap-1.5">
+              <label class="label cursor-pointer justify-start gap-2 p-0">
+                <input type="checkbox" class="checkbox checkbox-sm" bind:checked={overrideDuration} />
+                {@render lbl('Override duration', 'duration')}
+              </label>
+              <input
+                type="number"
+                class="input input-sm input-bordered w-full"
+                min="0"
+                step="500"
+                disabled={!overrideDuration}
+                bind:value={toastDuration}
+              />
+            </div>
+
+            <label class="label cursor-pointer justify-start gap-2 self-end">
+              <input type="checkbox" class="checkbox checkbox-sm" bind:checked={toastDismissible} />
+              {@render lbl('Dismissible', 'dismissible')}
+            </label>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Sticky output rail: fire · code -->
+    <aside class="reveal lg:sticky lg:top-6 flex flex-col gap-4" style="--d:180ms">
+      <!-- Primary action + variant triggers -->
+      <div class="rounded-box border border-base-300 p-5">
+        <button class="btn btn-primary btn-block" onclick={fireToast}>Fire toast</button>
+        <p class="mt-3 text-xs font-medium text-base-content/55">Other variants</p>
+        <div class="mt-2 grid grid-cols-2 gap-2">
           <button class="btn btn-sm" onclick={() => firePromise(true)}>promise (ok)</button>
           <button class="btn btn-sm" onclick={() => firePromise(false)}>promise (fail)</button>
           <button class="btn btn-sm" onclick={fireCustom}>custom</button>
-          <button class="btn btn-sm btn-ghost" onclick={() => toast?.dismiss()}>
-            dismiss all
-          </button>
+          <button class="btn btn-sm btn-ghost" onclick={() => toast?.dismiss()}>dismiss all</button>
         </div>
       </div>
 
-      <div class="mt-6">
-        <h2 class="mb-2 font-semibold">Snippet</h2>
+      <!-- Generated code: markup + call -->
+      <div class="rounded-box border border-base-300 p-5">
+        <h2 class="font-semibold">Code</h2>
+
+        <p class="mt-3 mb-1.5 text-xs font-medium text-base-content/55">Markup</p>
         <div class="relative">
-          {@html snippetHtml}
-          <div class="absolute right-2 top-2"><CopyButton text={snippet} /></div>
+          {@html markupHtml}
+          <div class="absolute right-2 top-2"><CopyButton text={markupSnippet} /></div>
+        </div>
+
+        <p class="mt-4 mb-1.5 text-xs font-medium text-base-content/55">Call</p>
+        <div class="relative">
+          {@html callHtml}
+          <div class="absolute right-2 top-2"><CopyButton text={callSnippet} /></div>
         </div>
       </div>
-    </div>
+    </aside>
   </div>
 </section>
-
-<!-- Secondary toaster pinned to top-left, used when `toasterId` matches its id.
-     Must be rendered BEFORE the primary toaster: toast() falls back to the
-     most-recently-connected toaster, so the primary needs to connect last. -->
-<sonner-toaster id={ALT_TOASTER_ID} position="top-left" {theme}></sonner-toaster>
 
 <sonner-toaster
   {position}
@@ -467,3 +467,19 @@
   expand={expand || undefined}
   invert={invert || undefined}
 ></sonner-toaster>
+
+<style>
+  /* One-shot staggered reveal on load; respects reduced-motion. */
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      animation: reveal 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation-delay: var(--d, 0ms);
+    }
+    @keyframes reveal {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+    }
+  }
+</style>
