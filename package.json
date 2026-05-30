@@ -1,6 +1,6 @@
 {
   "name": "sonner-wc",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Sonner's toast UX as a framework-agnostic Web Component. Drop in anywhere.",
   "repository": {
     "type": "git",
