@@ -22,7 +22,7 @@
 
   <div class="mt-8 flex items-center justify-center gap-3">
     <a class="btn btn-primary" href="{base}/docs/install">Get started</a>
-    <a class="btn btn-outline" href="{base}/docs/api">API reference</a>
+    <a class="btn btn-outline" href="{base}/playground">Playground</a>
   </div>
 
   <div class="mt-8">
