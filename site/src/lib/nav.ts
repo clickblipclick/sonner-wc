@@ -15,6 +15,7 @@ export const docsNav: NavGroup[] = [
       { label: 'API', href: '/docs/api' },
       { label: 'Theming', href: '/docs/theming' },
       { label: 'Accessibility', href: '/docs/accessibility' },
+      { label: 'Playground', href: '/playground' },
     ],
   },
 ];

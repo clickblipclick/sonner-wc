@@ -10,7 +10,7 @@
   class="sticky top-0 z-30 border-b border-base-300 bg-base-100/80 backdrop-blur"
 >
   <div class="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-    <div class="flex items-center gap-1 -ml-2">
+    <div class="flex items-center gap-1 {isDocs ? '-ml-2 lg:ml-0' : ''}">
       {#if isDocs}
         <label
           for="docs-drawer"
@@ -35,6 +35,15 @@
       {/if}
       <a href="{base}/" class="flex items-center gap-2 font-semibold tracking-tight">
         <span class="text-base-content text-nowrap">sonner-wc</span>
+      </a>
+      <a
+        href="https://github.com/clickblipclick/sonner-wc/releases"
+        target="_blank"
+        rel="noopener"
+        class="badge badge-ghost badge-sm font-mono text-base-content/60 hover:text-base-content"
+        aria-label="Released version {__PKG_VERSION__}"
+      >
+        v{__PKG_VERSION__}
       </a>
     </div>
     <nav class="flex items-center gap-1">
