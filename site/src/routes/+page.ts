@@ -1,4 +1,4 @@
-import { highlight } from '$lib/shiki';
+import { highlight } from '#lib/shiki.ts';
 
 const installCmd = 'npm install sonner-wc';
 const usageSnippet = `<body>

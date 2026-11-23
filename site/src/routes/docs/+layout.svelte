@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Sidebar from '$lib/components/Sidebar.svelte';
-  import PrevNext from '$lib/components/PrevNext.svelte';
+  import Sidebar from '#lib/components/Sidebar.svelte';
+  import PrevNext from '#lib/components/PrevNext.svelte';
   import { afterNavigate } from '$app/navigation';
 
   let { children } = $props();

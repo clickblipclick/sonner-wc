@@ -21,7 +21,7 @@
   }
 
   onMount(() => {
-    void import('$lib/sonner-wc');
+    void import('#lib/sonner-wc.ts');
     if (pinnedTheme) return;
     observedTheme = readTheme();
     const obs = new MutationObserver(() => {

@@ -1,7 +1,7 @@
 <script lang="ts">
-  import RunButton from '$lib/components/RunButton.svelte';
-  import Toaster from '$lib/components/Toaster.svelte';
-  import CopyButton from '$lib/components/CopyButton.svelte';
+  import RunButton from '#lib/components/RunButton.svelte';
+  import Toaster from '#lib/components/Toaster.svelte';
+  import CopyButton from '#lib/components/CopyButton.svelte';
   import type { PageProps } from './$types';
 
   let { data }: PageProps = $props();

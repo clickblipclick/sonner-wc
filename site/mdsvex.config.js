@@ -1,3 +1,5 @@
+// @ts-nocheck — this deliberately steps outside mdsvex's (older unified) types:
+// a null highlighter, current rehype plugins, and 'raw' hast nodes.
 import rehypeSlug from 'rehype-slug';
 import rehypeShiki from '@shikijs/rehype';
 

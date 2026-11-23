@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from '$app/state';
-  import { base } from '$app/paths';
-  import { docsNav } from '$lib/nav';
+  import { resolve } from '$app/paths';
+  import { docsNav } from '#lib/nav.ts';
 </script>
 
 <aside
@@ -15,8 +15,8 @@
         </h4>
         <ul class="space-y-1">
           {#each group.items as item}
-            {@const href = `${base}${item.href}`}
-            {@const active = page.url.pathname === href}
+            {@const href = resolve(item.href)}
+            {@const active = page.route.id === item.href}
             <li>
               <a
                 {href}

@@ -14,7 +14,7 @@
   ];
 
   let items: Var[] = $state(vars.map((v) => ({ ...v })));
-  let toast: typeof import('$lib/sonner-wc').toast | undefined = $state();
+  let toast: typeof import('#lib/sonner-wc.ts').toast | undefined = $state();
 
   function applyAll() {
     const t = document.querySelector('sonner-toaster') as HTMLElement | null;
@@ -30,7 +30,7 @@
   }
 
   onMount(async () => {
-    toast = (await import('$lib/sonner-wc')).toast;
+    toast = (await import('#lib/sonner-wc.ts')).toast;
     applyAll();
   });
 </script>

@@ -3,6 +3,10 @@
 	"private": true,
 	"version": "0.0.1",
 	"type": "module",
+	"imports": {
+		"#lib": "./src/lib/index.ts",
+		"#lib/*": "./src/lib/*"
+	},
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
@@ -13,7 +17,7 @@
 	},
 	"devDependencies": {
 		"@shikijs/rehype": "^4.0.2",
-		"@sveltejs/adapter-static": "^3.0.10",
+		"@sveltejs/adapter-static": "^4.0.1",
 		"@sveltejs/kit": "^3.4.0",
 		"@sveltejs/vite-plugin-svelte": "^7.0.0",
 		"@tailwindcss/typography": "^0.5.19",
@@ -22,10 +26,10 @@
 		"mdsvex": "^0.12.7",
 		"rehype-slug": "^6.0.0",
 		"shiki": "^4.0.2",
-		"svelte": "^5.55.2",
+		"svelte": "^5.57.1",
 		"svelte-check": "^4.4.6",
 		"tailwindcss": "^4.3.0",
 		"typescript": "^6.0.2",
-		"vite": "^8.0.7"
+		"vite": "^8.0.12"
 	}
 }

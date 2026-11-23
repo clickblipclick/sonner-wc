@@ -1,6 +1,6 @@
 <script lang="ts">
   import '../app.css';
-  import Topbar from '$lib/components/Topbar.svelte';
+  import Topbar from '#lib/components/Topbar.svelte';
   import { page } from '$app/state';
   let { children } = $props();
 
