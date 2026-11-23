@@ -14,7 +14,7 @@
 	"devDependencies": {
 		"@shikijs/rehype": "^4.0.2",
 		"@sveltejs/adapter-static": "^3.0.10",
-		"@sveltejs/kit": "^2.57.0",
+		"@sveltejs/kit": "^3.4.0",
 		"@sveltejs/vite-plugin-svelte": "^7.0.0",
 		"@tailwindcss/typography": "^0.5.19",
 		"@tailwindcss/vite": "^4.3.0",
