@@ -2,10 +2,10 @@
   import { onMount } from 'svelte';
   import Toaster from './Toaster.svelte';
 
-  let toast: typeof import('$lib/sonner-wc').toast | undefined = $state();
+  let toast: typeof import('#lib/sonner-wc.ts').toast | undefined = $state();
 
   onMount(async () => {
-    const mod = await import('$lib/sonner-wc');
+    const mod = await import('#lib/sonner-wc.ts');
     toast = mod.toast;
   });
 </script>

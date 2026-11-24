@@ -1,5 +1,5 @@
 <script lang="ts">
-  import ThemeWidget from '$lib/components/ThemeWidget.svelte';
+  import ThemeWidget from '#lib/components/ThemeWidget.svelte';
 </script>
 
 <svelte:head><title>Theming · sonner-wc</title></svelte:head>

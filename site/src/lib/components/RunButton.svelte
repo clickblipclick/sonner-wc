@@ -1,12 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte';
 
-  type Props = { run: (t: typeof import('$lib/sonner-wc').toast) => void; label?: string };
+  type Props = { run: (t: typeof import('#lib/sonner-wc.ts').toast) => void; label?: string };
   let { run, label = 'Run' }: Props = $props();
-  let toast: typeof import('$lib/sonner-wc').toast | undefined = $state();
+  let toast: typeof import('#lib/sonner-wc.ts').toast | undefined = $state();
 
   onMount(async () => {
-    toast = (await import('$lib/sonner-wc')).toast;
+    toast = (await import('#lib/sonner-wc.ts')).toast;
   });
 </script>
 

@@ -1,4 +1,4 @@
-import { highlight } from '$lib/shiki';
+import { highlight } from '#lib/shiki.ts';
 
 const toastFn = `import { toast } from 'sonner-wc';
 

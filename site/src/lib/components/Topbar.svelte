@@ -1,9 +1,9 @@
 <script lang="ts">
   import ThemeToggle from './ThemeToggle.svelte';
   import { page } from '$app/state';
-  import { base } from '$app/paths';
+  import { resolve } from '$app/paths';
 
-  const isDocs = $derived(page.url.pathname.startsWith(`${base}/docs`));
+  const isDocs = $derived(page.route.id?.startsWith('/docs') ?? false);
 </script>
 
 <header
@@ -33,7 +33,7 @@
           </svg>
         </label>
       {/if}
-      <a href="{base}/" class="flex items-center gap-2 font-semibold tracking-tight">
+      <a href={resolve('/')} class="flex items-center gap-2 font-semibold tracking-tight">
         <span class="text-base-content text-nowrap">sonner-wc</span>
       </a>
       <a

@@ -1,4 +1,6 @@
-export type NavItem = { label: string; href: string };
+import type { RouteId } from '$app/types';
+
+export type NavItem = { label: string; href: RouteId };
 export type NavGroup = { title: string; items: NavItem[] };
 
 export const docsNav: NavGroup[] = [

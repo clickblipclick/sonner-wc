@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import CopyButton from '$lib/components/CopyButton.svelte';
-  import { highlight } from '$lib/shiki';
+  import CopyButton from '#lib/components/CopyButton.svelte';
+  import { highlight } from '#lib/shiki.ts';
 
   type Position =
     | 'top-left' | 'top-center' | 'top-right'
@@ -14,7 +14,7 @@
     'bottom-left', 'bottom-center', 'bottom-right',
   ];
 
-  let toast: typeof import('$lib/sonner-wc').toast | undefined = $state();
+  let toast: typeof import('#lib/sonner-wc.ts').toast | undefined = $state();
 
   // Defaults mirror the documented API.
   let position: Position = $state('bottom-right');
@@ -145,7 +145,7 @@
   });
 
   onMount(async () => {
-    const mod = await import('$lib/sonner-wc');
+    const mod = await import('#lib/sonner-wc.ts');
     toast = mod.toast;
   });
 

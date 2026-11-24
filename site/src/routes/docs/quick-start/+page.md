@@ -1,5 +1,10 @@
 <script>
-  import { base } from '$app/paths';
+  import { resolve } from '$app/paths';
+
+  // Resolved here rather than inline: mdsvex turns quotes in the markdown
+  // body into typographic ones, which breaks inline expressions.
+  const api = resolve('/docs/api');
+  const theming = resolve('/docs/theming');
 </script>
 
 <svelte:head><title>Quick start · sonner-wc</title></svelte:head>
@@ -30,12 +35,12 @@ toast('Hello, world!');
 ```
 
 That's it. Calling `toast()` anywhere on the page after that will show a
-toast. See the <a href="{base}/docs/api">API reference</a> for variants, options, and
+toast. See the <a href={api}>API reference</a> for variants, options, and
 events.
 
 ## What next?
 
 - Tweak position, duration, and rich colors on `<sonner-toaster>` —
-  see <a href="{base}/docs/api">API</a>.
+  see <a href={api}>API</a>.
 - Override colors and dimensions via CSS custom properties —
-  see <a href="{base}/docs/theming">Theming</a>.
+  see <a href={theming}>Theming</a>.
